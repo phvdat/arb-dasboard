@@ -3,10 +3,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResultTable } from './ResultTable';
 import { groupResultsByExchange } from '@/lib/utils/groupResults';
-import { DynamicResult } from './types';
+import { ArbitrageResult } from '@/lib/store/type';
 
 type Props = {
-  results: Record<string, DynamicResult>;
+  results: Record<string, ArbitrageResult>;
 };
 
 export function DynamicTabs({ results }: Props) {

@@ -15,5 +15,5 @@ export const DYNAMIC_DATA_PATH = path.join(
 export const META_PATH = path.join(
   process.cwd(),
   'data',
-  'config.json'
+  'meta.json'
 );

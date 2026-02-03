@@ -10,11 +10,11 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { FixedResult } from './types';
-import { FixedDetailModal } from './FixedDetailModal';
+import { ArbitrageResult } from '@/lib/store/type';
+import { DetailModal } from '../common/DetailModal';
 
-export function FixedResultTable({ data }: { data: FixedResult[] }) {
-  const [selected, setSelected] = useState<FixedResult | null>(null);
+export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
+  const [selected, setSelected] = useState<ArbitrageResult | null>(null);
 
   const sorted = [...data].sort((a, b) => b.count - a.count);
 
@@ -37,10 +37,10 @@ export function FixedResultTable({ data }: { data: FixedResult[] }) {
             <TableRow key={`${r.pair}-${r.exchange1}`}>
               <TableCell>{r.pair}</TableCell>
               <TableCell className="font-bold">{r.count}</TableCell>
-              <TableCell>{r.lastSpread.toFixed(2)}</TableCell>
-              <TableCell>{r.lastProfit.toFixed(2)}</TableCell>
+              <TableCell>{r.last.spread.toFixed(2)}</TableCell>
+              <TableCell>{r.last.profit.toFixed(2)}</TableCell>
               <TableCell>
-                {new Date(r.lastSeen).toLocaleTimeString()}
+                {new Date(r.last.ts).toLocaleTimeString()}
               </TableCell>
               <TableCell>
                 <Button
@@ -57,7 +57,7 @@ export function FixedResultTable({ data }: { data: FixedResult[] }) {
       </Table>
 
       {selected && (
-        <FixedDetailModal
+        <DetailModal
           result={selected}
           onClose={() => setSelected(null)}
         />

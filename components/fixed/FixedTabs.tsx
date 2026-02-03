@@ -1,14 +1,14 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FixedResult } from './types';
 import { groupResultsByExchange } from '@/lib/utils/groupResults';
 import { FixedResultTable } from './FixedResultTable';
+import { ArbitrageResult } from '@/lib/store/type';
 
 export function FixedTabs({
   results,
 }: {
-  results: Record<string, FixedResult>;
+  results: Record<string, ArbitrageResult>;
 }) {
   const groups = groupResultsByExchange(results);
   const tabs = Object.keys(groups);

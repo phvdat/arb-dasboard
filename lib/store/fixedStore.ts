@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 import path from 'path';
 import { FIXED_DATA_PATH } from '../constants/paths';
-
+import { ArbitrageResult } from './type';
+const MAX_HISTORY = 100
 const PATH = FIXED_DATA_PATH
 
 export type FixedPair = {
@@ -10,16 +12,16 @@ export type FixedPair = {
   exchange2: string;
 };
 
-type FixedStore = {
+export type FixedStore = {
   config: {
     pairs: FixedPair[];
   };
-  latest: unknown[];
+  results: Record<string, ArbitrageResult>;
 };
 
 let store: FixedStore = {
   config: { pairs: [] },
-  latest: [],
+  results: {},
 };
 
 function loadStore() {
@@ -29,6 +31,11 @@ function loadStore() {
   } else {
     store = JSON.parse(fs.readFileSync(PATH, 'utf8'));
   }
+}
+
+function saveStore() {
+  fs.mkdirSync(path.dirname(PATH), { recursive: true });
+  fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
 }
 
 export function addFixedPair(p: FixedPair) {
@@ -41,7 +48,7 @@ export function addFixedPair(p: FixedPair) {
   );
   if (!exists) {
     store.config.pairs.push(p);
-    fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
+    saveStore()
   }
 }
 
@@ -50,10 +57,46 @@ export function getFixedPairs(): FixedPair[] {
   return store.config.pairs;
 }
 
-export function updateFixedLatest(data: unknown[]) {
+export function updateFixedResult(key: string, data: {
+  pair: string;
+  exchange1: string;
+  exchange2: string;
+  spread: number;
+  profit: number;
+  ts: number;
+}) {
   loadStore();
-  store.latest = data;
-  fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
+  if (!store.results[key]) {
+    store.results[key] = {
+      pair: data.pair,
+      exchange1: data.exchange1,
+      exchange2: data.exchange2,
+      count: 0,
+      last: {
+        spread: data.spread,
+        profit: data.profit,
+        ts: data.ts,
+      },
+      history: [],
+    };
+  }
+
+  const r = store.results[key];
+
+  r.count += 1;
+  r.last = {
+    spread: data.spread,
+    profit: data.profit,
+    ts: data.ts,
+  };
+
+  r.history.push(r.last);
+
+  if (r.history.length > MAX_HISTORY) {
+    r.history.shift(); // drop oldest
+    r.count -= 1;
+  }
+  saveStore();
 }
 
 export function removeFixedPair(p: FixedPair) {
@@ -68,5 +111,5 @@ export function removeFixedPair(p: FixedPair) {
       )
   );
 
-  fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
+  saveStore()
 }

@@ -6,22 +6,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DynamicResult } from "./types";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { DetailModal } from "./DetailModal";
+import { ArbitrageResult } from "@/lib/store/type";
 
-export function ResultTable({ data }: { data: DynamicResult[] }) {
+export function ResultTable({ data }: { data: ArbitrageResult[] }) {
   const [open, setOpen] = useState(false);
   const [detailKey, setDetailKey] = useState<string | null>(null);
 
-  function openDetail(r: DynamicResult) {
+  function openDetail(r: ArbitrageResult) {
     const key = `${r.pair}|${r.exchange1}|${r.exchange2}`;
     setDetailKey(key);
     setOpen(true);
   }
 
-  async function addToFixed(r: DynamicResult) {
+  async function addToFixed(r: ArbitrageResult) {
     await fetch("/api/fixed/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

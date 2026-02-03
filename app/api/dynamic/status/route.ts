@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { DYNAMIC_DATA_PATH } from '@/lib/constants/paths';
 import fs from 'fs';
-import path from 'path';
+import { NextResponse } from 'next/server';
 
-const DATA_PATH = path.join(process.cwd(), 'data/dynamic.json');
+const DATA_PATH = DYNAMIC_DATA_PATH
 
 export async function GET() {
   if (!fs.existsSync(DATA_PATH)) {

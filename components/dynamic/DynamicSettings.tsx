@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
 import { ClearButton } from "../common/ClearButton";
+import { StatusDot } from "../common/StatusDot";
 
 export function DynamicSettings() {
   const [exchanges, setExchanges] = useState("bingx,bitmart");
@@ -99,16 +100,10 @@ export function DynamicSettings() {
         />
       </div>
       <div className="text-sm">
-        Status:{" "}
-        {isRunning ? (
-          <Badge variant="outline" className="text-green-600">
-            Active
-          </Badge>
-        ) : (
-          <Badge variant="destructive">Inactive</Badge>
-        )}
+        <h1 className="text-2xl font-bold">Fixed Arbitrage</h1>
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-center">
+        <StatusDot status={isRunning ? "online" : "idle"} />
         <Button onClick={start} disabled={isRunning}>
           Start
         </Button>
@@ -116,10 +111,7 @@ export function DynamicSettings() {
         <Button variant="secondary" onClick={stop} disabled={!isRunning}>
           Stop
         </Button>
-        <ClearButton
-          label="Clear Dynamic Data"
-          endpoint="/api/clear/dynamic"
-        />
+        <ClearButton label="Clear Dynamic Data" endpoint="/api/clear/dynamic" />
       </div>
     </div>
   );

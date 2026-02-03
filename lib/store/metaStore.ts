@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { META_PATH } from '../constants/paths';
 
 export type RunningMode = 'dynamic' | 'fixed' | null;
 
@@ -8,8 +9,6 @@ type MetaState = {
   status: 'idle' | 'running';
   startedAt: number | null;
 };
-
-const META_PATH = path.join(process.cwd(), 'data/meta.json');
 
 let meta: MetaState = {
   runningMode: null,

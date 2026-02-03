@@ -1,21 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 import path from 'path';
+import { DYNAMIC_DATA_PATH } from '../constants/paths';
+import { ArbitrageResult } from './type';
 const MAX_HISTORY = 100;
-const DATA_PATH = path.join(process.cwd(), 'data/dynamic.json');
+const DATA_PATH = DYNAMIC_DATA_PATH
 
-export type DynamicResult = {
-  pair: string;
-  exchange1: string;
-  exchange2: string;
-  count: number;
-  last: any;
-  history: any[];
-};
 
 type Store = {
   config: unknown;
-  results: Record<string, DynamicResult>;
+  results: Record<string, ArbitrageResult>;
 };
 
 let store: Store = { config: null, results: {} };
@@ -26,7 +20,7 @@ function loadStore() {
   }
 }
 
-export function saveStore() {
+function saveStore() {
   fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
   fs.writeFileSync(DATA_PATH, JSON.stringify(store, null, 2));
 }
@@ -46,7 +40,11 @@ export function updateResult(key: string, data: {
       exchange1: data.exchange1,
       exchange2: data.exchange2,
       count: 0,
-      last: null,
+      last: {
+        spread: data.spread,
+        profit: data.profit,
+        ts: data.ts,
+      },
       history: [],
     };
   }
@@ -64,6 +62,7 @@ export function updateResult(key: string, data: {
 
   if (r.history.length > MAX_HISTORY) {
     r.history.shift(); // drop oldest
+    r.count -= 1;
   }
   saveStore();
 }

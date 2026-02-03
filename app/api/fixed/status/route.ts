@@ -6,7 +6,10 @@ const PATH = FIXED_DATA_PATH;
 
 export async function GET() {
   if (!fs.existsSync(PATH)) {
-    return NextResponse.json({ latest: [] });
+    return NextResponse.json({
+      config: { pairs: [] },
+      results: {},
+    });
   }
   return NextResponse.json(JSON.parse(fs.readFileSync(PATH, 'utf8')));
 }

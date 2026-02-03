@@ -7,6 +7,7 @@ const FILE = FIXED_DATA_PATH
 export async function POST() {
   if (fs.existsSync(FILE)) {
     fs.unlinkSync(FILE);
+    console.log('[Fixed] cleared');
   }
 
   return NextResponse.json({ ok: true });
