@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scan data
+/data/*.json
+/data/dynamic/*
+/data/fixed/*
+
+# but keep empty folders
+!/data/.gitkeep
