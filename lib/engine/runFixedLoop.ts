@@ -1,6 +1,6 @@
-import { createExchange } from './ccxt';
 import { maximumQuantityTradable } from './arbitrage';
 import { getFixedPairs, updateFixedLatest } from '../store/fixedStore';
+import { getExchange } from './exchangePool';
 
 export async function runFixedLoop(intervalMs: number) {
   async function tick() {
@@ -9,8 +9,8 @@ export async function runFixedLoop(intervalMs: number) {
 
     for (const p of pairs) {
       try {
-        const ex1 = createExchange(p.exchange1);
-        const ex2 = createExchange(p.exchange2);
+        const ex1 = getExchange(p.exchange1);
+        const ex2 = getExchange(p.exchange2);
 
         const ob1 = await ex1.fetchOrderBook(p.pair);
         const ob2 = await ex2.fetchOrderBook(p.pair);

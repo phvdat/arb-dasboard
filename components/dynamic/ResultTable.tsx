@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Table,
   TableBody,
@@ -9,10 +8,20 @@ import {
 } from "@/components/ui/table";
 import { DynamicResult } from "./types";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { DetailModal } from "./DetailModal";
 
 export function ResultTable({ data }: { data: DynamicResult[] }) {
-  const sorted = [...data].sort((a, b) => b.count - a.count);
-  async function addToFixed(r: any) {
+  const [open, setOpen] = useState(false);
+  const [detailKey, setDetailKey] = useState<string | null>(null);
+
+  function openDetail(r: DynamicResult) {
+    const key = `${r.pair}|${r.exchange1}|${r.exchange2}`;
+    setDetailKey(key);
+    setOpen(true);
+  }
+
+  async function addToFixed(r: DynamicResult) {
     await fetch("/api/fixed/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -23,34 +32,88 @@ export function ResultTable({ data }: { data: DynamicResult[] }) {
       }),
     });
   }
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Pair</TableHead>
-          <TableHead>Count</TableHead>
-          <TableHead>Spread %</TableHead>
-          <TableHead>Profit</TableHead>
-          <TableHead>Last Seen</TableHead>
-        </TableRow>
-      </TableHeader>
 
-      <TableBody>
-        {sorted.map((r) => (
-          <TableRow key={`${r.pair}-${r.exchange1}`}>
-            <TableCell>{r.pair}</TableCell>
-            <TableCell className="font-bold">{r.count}</TableCell>
-            <TableCell>{r.lastSpread.toFixed(2)}</TableCell>
-            <TableCell>{r.lastProfit.toFixed(2)}</TableCell>
-            <TableCell>{new Date(r.lastSeen).toLocaleTimeString()}</TableCell>
-            <TableCell>
-              <Button size="sm" onClick={() => addToFixed(r)}>
-                Add to Fixed
-              </Button>
-            </TableCell>
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+
+  return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Pair</TableHead>
+            <TableHead>Exchange</TableHead>
+            <TableHead>Count</TableHead>
+            <TableHead>Last Spread %</TableHead>
+            <TableHead>Last Profit</TableHead>
+            <TableHead>Last Seen</TableHead>
+            <TableHead>Action</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+
+        <TableBody>
+          {sorted.map((r) => (
+            <TableRow
+              key={`${r.pair}-${r.exchange1}-${r.exchange2}`}
+            >
+              <TableCell className="font-medium">
+                {r.pair}
+              </TableCell>
+
+              <TableCell>
+                {r.exchange1} → {r.exchange2}
+              </TableCell>
+
+              <TableCell className="font-bold">
+                {r.count}
+              </TableCell>
+
+              <TableCell>
+                {r.last ? r.last.spread.toFixed(2) : "-"}
+              </TableCell>
+
+              <TableCell>
+                {r.last ? r.last.profit.toFixed(2) : "-"}
+              </TableCell>
+
+              <TableCell className="text-xs text-muted-foreground">
+                {r.last
+                  ? new Date(r.last.ts).toLocaleString("vi-VN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })
+                  : "-"}
+              </TableCell>
+
+              <TableCell className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openDetail(r)}
+                >
+                  Detail
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={() => addToFixed(r)}
+                >
+                  Add to Fixed
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <DetailModal
+        open={open}
+        onOpenChange={setOpen}
+        detailKey={detailKey}
+      />
+    </>
   );
 }

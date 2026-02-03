@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { FIXED_DATA_PATH } from '../constants/paths';
 
-const PATH = path.join(process.cwd(), 'data/fixed.json');
+const PATH = FIXED_DATA_PATH
 
 export type FixedPair = {
   pair: string;
@@ -21,7 +22,7 @@ let store: FixedStore = {
   latest: [],
 };
 
-function ensure() {
+function loadStore() {
   if (!fs.existsSync(PATH)) {
     fs.mkdirSync(path.dirname(PATH), { recursive: true });
     fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
@@ -31,7 +32,7 @@ function ensure() {
 }
 
 export function addFixedPair(p: FixedPair) {
-  ensure();
+  loadStore();
   const exists = store.config.pairs.some(
     (x) =>
       x.pair === p.pair &&
@@ -45,12 +46,27 @@ export function addFixedPair(p: FixedPair) {
 }
 
 export function getFixedPairs(): FixedPair[] {
-  ensure();
+  loadStore();
   return store.config.pairs;
 }
 
 export function updateFixedLatest(data: unknown[]) {
-  ensure();
+  loadStore();
   store.latest = data;
+  fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
+}
+
+export function removeFixedPair(p: FixedPair) {
+  loadStore();
+
+  store.config.pairs = store.config.pairs.filter(
+    (x) =>
+      !(
+        x.pair === p.pair &&
+        x.exchange1 === p.exchange1 &&
+        x.exchange2 === p.exchange2
+      )
+  );
+
   fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
 }

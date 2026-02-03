@@ -1,6 +1,6 @@
-import { createExchange } from './ccxt';
 import { maximumQuantityTradable } from './arbitrage';
 import { updateResult } from '../store/dynamicStore';
+import { getExchange } from './exchangePool';
 
 export async function scanPair(
   pair: string,
@@ -8,8 +8,8 @@ export async function scanPair(
   ex2Id: string,
   minSpread: number
 ) {
-  const ex1 = createExchange(ex1Id);
-  const ex2 = createExchange(ex2Id);
+  const ex1 = getExchange(ex1Id);
+  const ex2 = getExchange(ex2Id);
 
   const ob1 = await ex1.fetchOrderBook(pair);
   const ob2 = await ex2.fetchOrderBook(pair);
@@ -27,9 +27,9 @@ export async function scanPair(
         pair,
         exchange1: ex1Id,
         exchange2: ex2Id,
-        lastSpread: (buy.profit / buy.qty / ob1.asks[0][0]) * 100,
-        lastProfit: buy.profit,
-        lastSeen: Date.now(),
+        spread: (buy.profit / buy.qty / ob1.asks[0][0]) * 100,
+        profit: buy.profit,
+        ts: Date.now(),
       }
     );
   }

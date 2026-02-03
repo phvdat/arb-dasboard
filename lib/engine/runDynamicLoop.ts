@@ -1,7 +1,9 @@
 import { setDynamicInterval } from './runtime';
-import { loadUSDTMarkets, intersectPairs } from './market';
 import { excludePairs, filterByVolume } from './filter';
 import { scanPair } from './runnerDynamic';
+import { throttle } from './throttle';
+import { getUSDTMarkets } from './marketCache';
+import { intersectPairs } from './exchangePool';
 
 type DynamicParams = {
   exchanges: string[];
@@ -29,8 +31,8 @@ export async function runDynamicLoop(params: DynamicParams) {
         const ex2 = exchanges[j];
 
         try {
-          const m1 = await loadUSDTMarkets(ex1);
-          const m2 = await loadUSDTMarkets(ex2);
+          const m1 = await getUSDTMarkets(ex1);
+          const m2 = await getUSDTMarkets(ex2);
 
           let pairs = intersectPairs(m1, m2);
           pairs = excludePairs(pairs, exclude);
@@ -38,13 +40,17 @@ export async function runDynamicLoop(params: DynamicParams) {
           // volume filter (chỉ check ở exchange 1 cho nhẹ)
           pairs = await filterByVolume(ex1, pairs, minVolume);
 
-          for (const pair of pairs) {
-            try {
-              await scanPair(pair, ex1, ex2, minSpread);
-            } catch {
-              // skip pair lỗi
+          const tasks = pairs.map(
+            (pair) => async () => {
+              try {
+                await scanPair(pair, ex1, ex2, minSpread);
+              } catch {
+                // skip pair lỗi
+              }
             }
-          }
+          );
+
+          await throttle(tasks, 300);
         } catch (e) {
           console.error(`[Dynamic] ${ex1}-${ex2} error`, e);
         }

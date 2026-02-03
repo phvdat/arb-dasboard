@@ -1,8 +1,8 @@
 import fs from 'fs';
-import path from 'path';
 import { NextResponse } from 'next/server';
+import { FIXED_DATA_PATH } from '@/lib/constants/paths';
 
-const PATH = path.join(process.cwd(), 'data/fixed.json');
+const PATH = FIXED_DATA_PATH;
 
 export async function GET() {
   if (!fs.existsSync(PATH)) {

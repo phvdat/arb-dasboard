@@ -1,11 +1,11 @@
-import { createExchange } from './ccxt';
+import { getExchange } from "./exchangePool";
 
 export async function filterByVolume(
   exchangeId: string,
   pairs: string[],
   minVolume: number
 ): Promise<string[]> {
-  const ex = createExchange(exchangeId);
+  const ex = getExchange(exchangeId);
   const result: string[] = [];
 
   for (const pair of pairs) {
