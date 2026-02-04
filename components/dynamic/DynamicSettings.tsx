@@ -6,8 +6,11 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
+import { toast } from "sonner";
 
 export function DynamicSettings() {
+  const [starting, setStarting] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [exchanges, setExchanges] = useState("bingx,bitmart");
   const [minVolume, setMinVolume] = useState(100000);
   const [minSpread, setMinSpread] = useState(0.6);
@@ -15,19 +18,31 @@ export function DynamicSettings() {
   const isRunning =
     meta?.status === "running" && meta?.runningMode === "dynamic";
   async function start() {
-    await fetch("/api/dynamic/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        exchanges: exchanges.split(",").map((s) => s.trim()),
-        minVolume,
-        minSpread,
-      }),
-    });
+    try {
+      setStarting(true);
+      await fetch("/api/dynamic/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          exchanges: exchanges.split(",").map((s) => s.trim()),
+          minVolume,
+          minSpread,
+        }),
+      });
+      toast("Dynamic mode started");
+    } finally {
+      setStarting(false);
+    }
   }
 
   async function stop() {
-    await fetch("/api/dynamic/stop", { method: "POST" });
+    try {
+      setStopping(true);
+      await fetch("/api/dynamic/stop", { method: "POST" });
+      toast("Dynamic mode stopped");
+    } finally {
+      setStopping(false);
+    }
   }
 
   useEffect(() => {
@@ -92,11 +107,20 @@ export function DynamicSettings() {
       </div>
       <div className="flex gap-3 items-center">
         <StatusDot status={isRunning ? "online" : "idle"} />
-        <Button onClick={start} disabled={isRunning}>
+        <Button
+          onClick={start}
+          disabled={isRunning || starting}
+          loading={starting}
+        >
           Start
         </Button>
 
-        <Button variant="destructive" onClick={stop} disabled={!isRunning}>
+        <Button
+          variant="destructive"
+          onClick={stop}
+          disabled={!isRunning || stopping}
+          loading={stopping}
+        >
           Stop
         </Button>
         <ClearButton label="Clear Dynamic Data" endpoint="/api/dynamic/clear" />

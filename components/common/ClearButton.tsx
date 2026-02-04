@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   label: string;
@@ -25,8 +27,11 @@ export function ClearButton({
   endpoint,
   onCleared,
 }: Props) {
+
+  const [loading, setLoading] = useState(false);
   async function clear() {
     await fetch(endpoint, { method: "POST" });
+    toast("Cleared data");
     onCleared?.();
   }
 
