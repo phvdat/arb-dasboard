@@ -14,7 +14,6 @@ export async function POST(req: Request) {
       minVolume,
       minSpread,
       excludePairs = [],
-      intervalMs = 15000,
     } = body;
 
     if (!exchanges || exchanges.length < 2) {
@@ -45,7 +44,6 @@ export async function POST(req: Request) {
       minVolume,
       minSpread,
       excludePairs,
-      intervalMs,
     });
 
     return NextResponse.json({ ok: true });

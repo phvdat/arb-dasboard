@@ -4,7 +4,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { Badge } from "../ui/badge";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
 
@@ -12,7 +11,6 @@ export function DynamicSettings() {
   const [exchanges, setExchanges] = useState("bingx,bitmart");
   const [minVolume, setMinVolume] = useState(100000);
   const [minSpread, setMinSpread] = useState(0.6);
-  const [intervalMs, setIntervalMs] = useState(15000);
   const [meta, setMeta] = useState<any>(null);
   const isRunning =
     meta?.status === "running" && meta?.runningMode === "dynamic";
@@ -24,7 +22,6 @@ export function DynamicSettings() {
         exchanges: exchanges.split(",").map((s) => s.trim()),
         minVolume,
         minSpread,
-        intervalMs,
       }),
     });
   }
@@ -41,7 +38,6 @@ export function DynamicSettings() {
         setExchanges(json.config.exchanges.join(","));
         setMinVolume(json.config.minVolume);
         setMinSpread(json.config.minSpread);
-        setIntervalMs(json.config.intervalMs ?? 15000);
       }
     };
     load();
@@ -91,14 +87,6 @@ export function DynamicSettings() {
         </div>
       </div>
 
-      <div>
-        <label className="text-sm">Interval (ms)</label>
-        <Input
-          type="number"
-          value={intervalMs}
-          onChange={(e) => setIntervalMs(+e.target.value)}
-        />
-      </div>
       <div className="text-sm">
         <h1 className="text-2xl font-bold">Fixed Arbitrage</h1>
       </div>
@@ -111,7 +99,7 @@ export function DynamicSettings() {
         <Button variant="secondary" onClick={stop} disabled={!isRunning}>
           Stop
         </Button>
-        <ClearButton label="Clear Dynamic Data" endpoint="/api/clear/dynamic" />
+        <ClearButton label="Clear Dynamic Data" endpoint="/api/dynamic/clear" />
       </div>
     </div>
   );

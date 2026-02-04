@@ -1,4 +1,9 @@
-import { setDynamicInterval } from './runtime';
+import {
+  startDynamic,
+  stopDynamic,
+  shouldDynamicRun,
+} from './runtime';
+
 import { excludePairs, filterByVolume } from './filter';
 import { scanPair } from './runnerDynamic';
 import { throttle } from './throttle';
@@ -10,7 +15,6 @@ type DynamicParams = {
   minVolume: number;
   minSpread: number;
   excludePairs: string[];
-  intervalMs: number;
 };
 
 export async function runDynamicLoop(params: DynamicParams) {
@@ -19,48 +23,57 @@ export async function runDynamicLoop(params: DynamicParams) {
     minVolume,
     minSpread,
     excludePairs: exclude,
-    intervalMs,
   } = params;
 
-  async function tick() {
-    console.log('[Dynamic] scanning...');
+  if (!startDynamic()) {
+    console.log('[Dynamic] already running');
+    return;
+  }
 
-    for (let i = 0; i < exchanges.length; i++) {
-      for (let j = i + 1; j < exchanges.length; j++) {
-        const ex1 = exchanges[i];
-        const ex2 = exchanges[j];
+  console.log('[Dynamic] started');
 
-        try {
-          const m1 = await getUSDTMarkets(ex1);
-          const m2 = await getUSDTMarkets(ex2);
+  try {
+    while (shouldDynamicRun()) {
+      console.log('[Dynamic] scanning...');
 
-          let pairs = intersectPairs(m1, m2);
-          pairs = excludePairs(pairs, exclude);
+      for (let i = 0; i < exchanges.length; i++) {
+        for (let j = i + 1; j < exchanges.length; j++) {
+          if (!shouldDynamicRun()) break;
 
-          // volume filter (chỉ check ở exchange 1 cho nhẹ)
-          pairs = await filterByVolume(ex1, pairs, minVolume);
+          const ex1 = exchanges[i];
+          const ex2 = exchanges[j];
 
-          const tasks = pairs.map(
-            (pair) => async () => {
-              try {
-                await scanPair(pair, ex1, ex2, minSpread);
-              } catch {
-                // skip pair lỗi
+          try {
+            const m1 = await getUSDTMarkets(ex1);
+            const m2 = await getUSDTMarkets(ex2);
+
+            let pairs = intersectPairs(m1, m2);
+            pairs = excludePairs(pairs, exclude);
+
+            // volume filter (chỉ check ở exchange 1)
+            pairs = await filterByVolume(ex1, pairs, minVolume);
+
+            const tasks = pairs.map(
+              (pair) => async () => {
+                if (!shouldDynamicRun()) return;
+
+                try {
+                  await scanPair(pair, ex1, ex2, minSpread);
+                } catch {
+                  // skip pair lỗi
+                }
               }
-            }
-          );
+            );
 
-          await throttle(tasks, 300);
-        } catch (e) {
-          console.error(`[Dynamic] ${ex1}-${ex2} error`, e);
+            await throttle(tasks, 10);
+          } catch (e) {
+            console.error(`[Dynamic] ${ex1}-${ex2} error`, e);
+          }
         }
       }
     }
+  } finally {
+    stopDynamic();
+    console.log('[Dynamic] stopped');
   }
-
-  // chạy ngay 1 lần
-  tick();
-
-  const interval = setInterval(tick, intervalMs);
-  setDynamicInterval(interval);
 }

@@ -1,16 +1,19 @@
-let dynamicInterval: NodeJS.Timeout | null = null;
+let dynamicRunning = false;
 
-export function setDynamicInterval(i: NodeJS.Timeout) {
-  dynamicInterval = i;
+export function isDynamicRunning() {
+  return dynamicRunning;
 }
 
-export function clearDynamicInterval() {
-  if (dynamicInterval) {
-    clearInterval(dynamicInterval);
-    dynamicInterval = null;
-  }
+export function startDynamic() {
+  if (dynamicRunning) return false;
+  dynamicRunning = true;
+  return true;
 }
 
-export function hasDynamicInterval() {
-  return dynamicInterval !== null;
+export function stopDynamic() {
+  dynamicRunning = false;
+}
+
+export function shouldDynamicRun() {
+  return dynamicRunning;
 }
