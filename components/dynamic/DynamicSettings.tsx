@@ -101,10 +101,6 @@ export function DynamicSettings() {
           />
         </div>
       </div>
-
-      <div className="text-sm">
-        <h1 className="text-2xl font-bold">Fixed Arbitrage</h1>
-      </div>
       <div className="flex gap-3 items-center">
         <StatusDot status={isRunning ? "online" : "idle"} />
         <Button

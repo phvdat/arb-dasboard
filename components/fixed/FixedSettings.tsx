@@ -11,21 +11,20 @@ export function FixedSettings() {
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [meta, setMeta] = useState<any>(null);
-  const isRunning =
-    meta?.status === "running" && meta?.runningMode === "fixed";
+  const isRunning = meta?.status === "running" && meta?.runningMode === "fixed";
 
   const start = async () => {
     try {
       setStarting(true);
       await fetch("/api/fixed/start", { method: "POST" });
       toast("Fixed mode started");
-    }finally {
+    } finally {
       setStarting(false);
     }
   };
 
   const stop = async () => {
-    try{
+    try {
       setStopping(true);
       await fetch("/api/fixed/stop", { method: "POST" });
       toast("Fixed mode stopped");
@@ -46,21 +45,29 @@ export function FixedSettings() {
   }, []);
 
   return (
-    <div className="flex items-center justify-between">
-      <h1 className="text-2xl font-bold">Fixed Arbitrage</h1>
+    <div className="border rounded-lg p-4 space-y-4">
+      <h2 className="font-semibold text-lg">Fixed Arbitrage</h2>
       <div className="flex items-center gap-2">
-        <StatusDot status={isRunning ? "online": "idle"} />
+        <StatusDot status={isRunning ? "online" : "idle"} />
 
-        <Button onClick={start} disabled={isRunning || starting} loading={starting}>
+        <Button
+          onClick={start}
+          disabled={isRunning || starting}
+          loading={starting}
+        >
           Start
         </Button>
 
-        <Button onClick={stop} variant="destructive" disabled={!isRunning || stopping} loading={stopping}>
+        <Button
+          onClick={stop}
+          variant="destructive"
+          disabled={!isRunning || stopping}
+          loading={stopping}
+        >
           Stop
         </Button>
 
         <ClearButton label="Clear Fixed Data" endpoint="/api/fixed/clear" />
-              
       </div>
     </div>
   );

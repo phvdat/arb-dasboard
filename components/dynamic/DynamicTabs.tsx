@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ResultTable } from './ResultTable';
-import { groupResultsByExchange } from '@/lib/utils/groupResults';
-import { ArbitrageResult } from '@/lib/store/type';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ResultTable } from "./ResultTable";
+import { groupResultsByExchange } from "@/lib/utils/groupResults";
+import { ArbitrageResult } from "@/lib/store/type";
 
 type Props = {
   results: Record<string, ArbitrageResult>;
@@ -23,13 +23,15 @@ export function DynamicTabs({ results }: Props) {
 
   return (
     <Tabs defaultValue={tabs[0]}>
-      <TabsList>
-        {tabs.map((t) => (
-          <TabsTrigger key={t} value={t}>
-            {t}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      <div className="overflow-x-auto overflow-y-hidden">
+        <TabsList>
+          {tabs.map((t) => (
+            <TabsTrigger key={t} value={t}>
+              {t}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
 
       {tabs.map((t) => (
         <TabsContent key={t} value={t}>
