@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResultTable } from "./ResultTable";
 import { groupResultsByExchange } from "@/lib/utils/groupResults";
 import { ArbitrageResult } from "@/lib/store/type";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
 type Props = {
   results: Record<string, ArbitrageResult>;
@@ -22,16 +23,17 @@ export function DynamicTabs({ results }: Props) {
   }
 
   return (
-    <Tabs defaultValue={tabs[0]}>
-      <div className="overflow-x-auto overflow-y-hidden">
-        <TabsList>
+    <Tabs defaultValue={tabs[0]} >
+      <ScrollArea>
+        <TabsList className='mb-2'>
           {tabs.map((t) => (
             <TabsTrigger key={t} value={t}>
               {t}
             </TabsTrigger>
           ))}
         </TabsList>
-      </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {tabs.map((t) => (
         <TabsContent key={t} value={t}>

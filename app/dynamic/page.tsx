@@ -6,6 +6,7 @@ import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
 import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import Loading from "@/components/common/Loading";
 
 export default function DynamicPage() {
   const [data, setData] = useState<any>(null);
@@ -21,13 +22,7 @@ export default function DynamicPage() {
     return () => clearInterval(i);
   }, []);
 
-  if (!data)
-    return (
-      <Button disabled size="sm">
-        <Spinner data-icon="inline-start" />
-        Loading...
-      </Button>
-    );
+  if (!data) return <Loading />
 
   return (
     <div className="p-6 space-y-6">

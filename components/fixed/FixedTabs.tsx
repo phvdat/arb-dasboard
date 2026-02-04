@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { groupResultsByExchange } from "@/lib/utils/groupResults";
 import { FixedResultTable } from "./FixedResultTable";
 import { ArbitrageResult } from "@/lib/store/type";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
 export function FixedTabs({
   results,
@@ -19,15 +20,16 @@ export function FixedTabs({
 
   return (
     <Tabs defaultValue={tabs[0]}>
-      <div className="overflow-x-auto overflow-y-hidden">
-        <TabsList>
+      <ScrollArea>
+        <TabsList className="mb-3">
           {tabs.map((t) => (
             <TabsTrigger key={t} value={t}>
               {t}
             </TabsTrigger>
           ))}
         </TabsList>
-      </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {tabs.map((t) => (
         <TabsContent key={t} value={t}>

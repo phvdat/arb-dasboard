@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { FixedTabs } from '@/components/fixed/FixedTabs';
 import { FixedSettings } from '@/components/fixed/FixedSettings';
+import Loading from '@/components/common/Loading';
 
 export default function FixedPage() {
   const [data, setData] = useState<any>(null);
@@ -21,7 +22,7 @@ export default function FixedPage() {
   }, []);
 
 
-  if (!data) return <div className="p-6">Loading...</div>;
+  if (!data) return <Loading />
 
   return (
     <div className="p-6 space-y-6">

@@ -36,7 +36,6 @@ export async function runFixedLoop() {
 
           const ob1 = await ex1.fetchOrderBook(pair);
           const ob2 = await ex2.fetchOrderBook(pair);
-          console.log('json.config.minSpread', json.config.minSpread);
           
           const r = calcBestTwoWay(ob1, ob2, json.config.minSpread);
 
