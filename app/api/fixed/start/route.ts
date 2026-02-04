@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   }
 
   startMode('fixed');
-  runFixedLoop(15000);
+  runFixedLoop();
 
   return NextResponse.json({ ok: true });
 }

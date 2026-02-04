@@ -12,6 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
 
 type Props = {
   label: string;
@@ -33,7 +34,7 @@ export function ClearButton({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm">
-          {label}
+          <Trash/>
         </Button>
       </AlertDialogTrigger>
 

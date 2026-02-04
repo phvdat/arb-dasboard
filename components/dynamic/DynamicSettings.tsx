@@ -96,7 +96,7 @@ export function DynamicSettings() {
           Start
         </Button>
 
-        <Button variant="secondary" onClick={stop} disabled={!isRunning}>
+        <Button variant="destructive" onClick={stop} disabled={!isRunning}>
           Stop
         </Button>
         <ClearButton label="Clear Dynamic Data" endpoint="/api/dynamic/clear" />

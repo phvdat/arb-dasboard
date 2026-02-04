@@ -2,8 +2,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
+import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
 
 export function FixedSettings() {
@@ -17,10 +17,6 @@ export function FixedSettings() {
 
   const stop = async () => {
     await fetch("/api/fixed/stop", { method: "POST" });
-  };
-
-  const clear = async () => {
-    await fetch("/api/fixed/clear", { method: "POST" });
   };
 
   useEffect(() => {
@@ -48,9 +44,8 @@ export function FixedSettings() {
           Stop
         </Button>
 
-        <Button onClick={clear} variant="outline">
-          Clear Data
-        </Button>
+        <ClearButton label="Clear Fixed Data" endpoint="/api/fixed/clear" />
+              
       </div>
     </div>
   );
