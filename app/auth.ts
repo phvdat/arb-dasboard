@@ -5,7 +5,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Google],
   callbacks: {
     async signIn({ user }) {
-      console.log('user', user, ALLOWED_EMAILS, ALLOWED_EMAILS.includes(user.email || ''));
       if (!ALLOWED_EMAILS.includes(user.email || '')) {
         return false
       }
