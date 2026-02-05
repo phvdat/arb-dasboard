@@ -16,7 +16,7 @@ export default function DynamicPage() {
     };
 
     load();
-    const i = setInterval(load, 10000);
+    const i = setInterval(load, 3000);
     return () => clearInterval(i);
   }, []);
 

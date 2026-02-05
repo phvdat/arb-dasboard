@@ -1,24 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import { signOut, useSession } from 'next-auth/react';
+import { useMetaSWR } from "@/swr/useMetaSWR";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Header() {
-  const { data } = useSession();
-  const [meta, setMeta] = useState<any>(null);
-
-  useEffect(() => {
-    const load = async () => {
-      const res = await fetch("/api/meta");
-      setMeta(await res.json());
-    };
-    load();
-  }, []);
+  const { data : session } = useSession();
+  const { data: meta } = useMetaSWR();
 
   const status =
     meta?.status === "running"

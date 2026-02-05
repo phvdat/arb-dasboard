@@ -7,21 +7,27 @@ import { useEffect, useState } from "react";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
 import { toast } from "sonner";
+import { endpoint } from "@/config/endpoint";
+import { useMetaSWR } from "@/swr/useMetaSWR";
+import { mutate } from "swr";
 
 export function DynamicSettings() {
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const [exchanges, setExchanges] = useState("gate,bingx,bitget,bitmart,bitmex,bybit,coinex,cryptocom,htx,hyperliquid,kucoin,mexc,woo");
+  const [exchanges, setExchanges] = useState(
+    "gate,bingx,bitget,bitmart,bitmex,bybit,coinex,cryptocom,htx,hyperliquid,kucoin,mexc,woo",
+  );
   const [minVolume, setMinVolume] = useState(100000);
   const [minPriceRatio, setMinPriceRatio] = useState(1.006);
   const [maxAllowedRatio, setMaxAllowedRatio] = useState(2);
-  const [meta, setMeta] = useState<any>(null);
+
+  const { data: meta } = useMetaSWR();
   const isRunning =
     meta?.status === "running" && meta?.runningMode === "dynamic";
   async function start() {
     try {
       setStarting(true);
-      await fetch("/api/dynamic/start", {
+      await fetch(endpoint.dynamic.start, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -31,6 +37,7 @@ export function DynamicSettings() {
           maxAllowedRatio,
         }),
       });
+      mutate(endpoint.meta);
       toast("Dynamic mode started");
     } finally {
       setStarting(false);
@@ -40,8 +47,9 @@ export function DynamicSettings() {
   async function stop() {
     try {
       setStopping(true);
-      await fetch("/api/dynamic/stop", { method: "POST" });
+      await fetch(endpoint.dynamic.stop, { method: "POST" });
       toast("Dynamic mode stopped");
+      mutate(endpoint.meta);
     } finally {
       setStopping(false);
     }
@@ -49,7 +57,7 @@ export function DynamicSettings() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/dynamic/config");
+      const res = await fetch(endpoint.dynamic.config);
       const json = await res.json();
       if (json.config) {
         setExchanges(json.config.exchanges.join(","));
@@ -58,15 +66,6 @@ export function DynamicSettings() {
       }
     };
     load();
-  }, []);
-
-  useEffect(() => {
-    const loadMeta = async () => {
-      const res = await fetch("/api/meta");
-      setMeta(await res.json());
-    };
-
-    loadMeta();
   }, []);
 
   return (
@@ -100,7 +99,7 @@ export function DynamicSettings() {
             onChange={(e) => setMinPriceRatio(+e.target.value)}
           />
         </div>
-        
+
         <div>
           <label className="text-sm">Max Allow Ratio (%)</label>
           <Input

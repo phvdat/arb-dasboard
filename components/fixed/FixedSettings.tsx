@@ -6,17 +6,21 @@ import { useEffect, useState } from "react";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
 import { toast } from "sonner";
+import { useMetaSWR } from "@/swr/useMetaSWR";
+import { mutate } from "swr";
+import { endpoint } from "@/config/endpoint";
 
 export function FixedSettings() {
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const [meta, setMeta] = useState<any>(null);
+  const { data: meta } = useMetaSWR();
   const isRunning = meta?.status === "running" && meta?.runningMode === "fixed";
 
   const start = async () => {
     try {
       setStarting(true);
-      await fetch("/api/fixed/start", { method: "POST" });
+      await fetch(endpoint.fixed.start, { method: "POST" });
+      mutate(endpoint.meta);
       toast("Fixed mode started");
     } finally {
       setStarting(false);
@@ -26,21 +30,13 @@ export function FixedSettings() {
   const stop = async () => {
     try {
       setStopping(true);
-      await fetch("/api/fixed/stop", { method: "POST" });
+      await fetch(endpoint.fixed.stop, { method: "POST" });
+      mutate(endpoint.meta);
       toast("Fixed mode stopped");
     } finally {
       setStopping(false);
     }
   };
-
-  useEffect(() => {
-    const loadMeta = async () => {
-      const res = await fetch("/api/meta");
-      setMeta(await res.json());
-    };
-
-    loadMeta();
-  }, []);
 
   return (
     <div className="border rounded-lg p-4 space-y-4">
