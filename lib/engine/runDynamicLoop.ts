@@ -4,9 +4,10 @@ import {
   stopDynamic,
 } from './runtime';
 
-import { getCachedPairs } from './getPairs';
+import { buildRoundRobinPairs } from '@/lib/engine/helpers/buildRoundRobinPairs';
+import { runWithConcurrency } from '@/lib/engine/helpers/runWithConcurrency';
 import { scanPair } from './runnerDynamic';
-import { throttle } from './throttle';
+import { getCachedPairs } from './getPairs';
 
 type DynamicParams = {
   exchanges: string[];
@@ -17,14 +18,6 @@ type DynamicParams = {
 };
 
 export async function runDynamicLoop(params: DynamicParams) {
-  const {
-    exchanges,
-    minVolume,
-    minPriceRatio,
-    maxAllowedRatio,
-    excludePairs: exclude,
-  } = params;
-
   if (!startDynamic()) {
     console.log('[Dynamic] already running');
     return;
@@ -32,40 +25,46 @@ export async function runDynamicLoop(params: DynamicParams) {
 
   console.log('[Dynamic] started');
 
+  let round = 0;
+
   try {
     while (shouldDynamicRun()) {
-      console.log('[Dynamic] scanning...');
-      console.time("Start [Dynamic]");
-      for (let i = 0; i < exchanges.length; i++) {
-        for (let j = i + 1; j < exchanges.length; j++) {
-          if (!shouldDynamicRun()) break;
+      console.log(`[Dynamic] round ${round}`);
+      console.time('Dynamic round');
+      const pairs = buildRoundRobinPairs(
+        params.exchanges,
+        round
+      );
 
-          const ex1 = exchanges[i];
-          const ex2 = exchanges[j];
+      const tasks = pairs.map(
+        ([ex1, ex2]) => async () => {
+          if (!shouldDynamicRun()) return;
 
-          try {
-            console.time("getCachedPairs");
-            const pairs = await getCachedPairs(ex1, ex2, new Set(exclude), minVolume);
-            const tasks = pairs.map(
-              (pair) => async () => {
-                if (!shouldDynamicRun()) return;
+          const symbols = await getCachedPairs(
+            ex1,
+            ex2,
+            new Set(params.excludePairs),
+            params.minVolume
+          );
 
-                try {
-                  await scanPair(pair, ex1, ex2, minPriceRatio, maxAllowedRatio);
-                } catch {
-                  // skip pair lỗi
-                }
-              }
+          for (const pair of symbols) {
+            if (!shouldDynamicRun()) break;
+            await scanPair(
+              pair,
+              ex1,
+              ex2,
+              params.minPriceRatio,
+              params.maxAllowedRatio
             );
-            console.timeEnd("getCachedPairs");
-
-            await throttle(tasks, 10);
-          } catch (e) {
-            console.error(`[Dynamic] ${ex1}-${ex2} error`, e);
           }
         }
-      }
-      console.timeEnd("Start [Dynamic]");
+      );
+
+      // mỗi task = 1 exchange pair
+      await runWithConcurrency(tasks, tasks.length);
+
+      console.timeEnd('Dynamic round');
+      round++;
     }
   } finally {
     stopDynamic();
