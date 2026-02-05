@@ -73,7 +73,7 @@ export function DetailModal({ open, onOpenChange, detailKey }: Props) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Time</TableHead>
-                    <TableHead>Spread %</TableHead>
+                    <TableHead>Ratio %</TableHead>
                     <TableHead>Profit</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -94,7 +94,7 @@ export function DetailModal({ open, onOpenChange, detailKey }: Props) {
                             second: "2-digit",
                           })}
                         </TableCell>
-                        <TableCell>{h.spread.toFixed(2)}</TableCell>
+                        <TableCell>{h.ratio.toFixed(2)}</TableCell>
                         <TableCell>{h.profit.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}

@@ -6,8 +6,10 @@ import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { signOut, useSession } from 'next-auth/react';
 
 export function Header() {
+  const { data } = useSession();
   const [meta, setMeta] = useState<any>(null);
 
   useEffect(() => {
@@ -16,8 +18,6 @@ export function Header() {
       setMeta(await res.json());
     };
     load();
-    const i = setInterval(load, 3000);
-    return () => clearInterval(i);
   }, []);
 
   const status =

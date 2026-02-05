@@ -12,7 +12,8 @@ export async function POST(req: Request) {
     const {
       exchanges,
       minVolume,
-      minSpread,
+      minPriceRatio,
+      maxAllowedRatio,
       excludePairs = [],
     } = body;
 
@@ -35,14 +36,16 @@ export async function POST(req: Request) {
     setConfig({
       exchanges,
       minVolume,
-      minSpread,
+      minPriceRatio,
+      maxAllowedRatio,
       excludePairs,
     });
 
     runDynamicLoop({
       exchanges,
       minVolume,
-      minSpread,
+      minPriceRatio,
+      maxAllowedRatio,
       excludePairs,
     });
 

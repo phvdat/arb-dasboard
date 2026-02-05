@@ -47,3 +47,5 @@ next-env.d.ts
 
 # but keep empty folders
 !/data/.gitkeep
+
+/cache

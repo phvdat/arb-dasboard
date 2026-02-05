@@ -43,7 +43,7 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
             <TableHead>Pair</TableHead>
             <TableHead>Exchange</TableHead>
             <TableHead>Count</TableHead>
-            <TableHead>Last Spread %</TableHead>
+            <TableHead>Last Ratio %</TableHead>
             <TableHead>Last Profit</TableHead>
             <TableHead>Last Seen</TableHead>
             <TableHead>Action</TableHead>
@@ -68,7 +68,7 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
               </TableCell>
 
               <TableCell>
-                {r.last ? r.last.spread.toFixed(2) : "-"}
+                {r.last ? r.last.ratio.toFixed(2) : "-"}
               </TableCell>
 
               <TableCell>

@@ -1,5 +1,5 @@
 export type ArbitrageTick = {
-  spread: number;
+  ratio: number;
   profit: number;
   ts: number;
 };

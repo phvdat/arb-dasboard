@@ -40,8 +40,6 @@ export function FixedSettings() {
     };
 
     loadMeta();
-    const i = setInterval(loadMeta, 2000);
-    return () => clearInterval(i);
   }, []);
 
   return (

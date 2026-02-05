@@ -29,7 +29,7 @@ export function updateResult(key: string, data: {
   pair: string;
   exchange1: string;
   exchange2: string;
-  spread: number;
+  ratio: number;
   profit: number;
   ts: number;
 }) {
@@ -41,7 +41,7 @@ export function updateResult(key: string, data: {
       exchange2: data.exchange2,
       count: 0,
       last: {
-        spread: data.spread,
+        ratio: data.ratio,
         profit: data.profit,
         ts: data.ts,
       },
@@ -53,7 +53,7 @@ export function updateResult(key: string, data: {
 
   r.count += 1;
   r.last = {
-    spread: data.spread,
+    ratio: data.ratio,
     profit: data.profit,
     ts: data.ts,
   };

@@ -11,9 +11,10 @@ import { toast } from "sonner";
 export function DynamicSettings() {
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const [exchanges, setExchanges] = useState("bingx,bitmart");
+  const [exchanges, setExchanges] = useState("gate,bingx,bitget,bitmart,bitmex,bybit,coinex,cryptocom,htx,hyperliquid,kucoin,mexc,woo");
   const [minVolume, setMinVolume] = useState(100000);
-  const [minSpread, setMinSpread] = useState(0.6);
+  const [minPriceRatio, setMinPriceRatio] = useState(1.006);
+  const [maxAllowedRatio, setMaxAllowedRatio] = useState(2);
   const [meta, setMeta] = useState<any>(null);
   const isRunning =
     meta?.status === "running" && meta?.runningMode === "dynamic";
@@ -26,7 +27,8 @@ export function DynamicSettings() {
         body: JSON.stringify({
           exchanges: exchanges.split(",").map((s) => s.trim()),
           minVolume,
-          minSpread,
+          minPriceRatio,
+          maxAllowedRatio,
         }),
       });
       toast("Dynamic mode started");
@@ -52,7 +54,7 @@ export function DynamicSettings() {
       if (json.config) {
         setExchanges(json.config.exchanges.join(","));
         setMinVolume(json.config.minVolume);
-        setMinSpread(json.config.minSpread);
+        setMinPriceRatio(json.config.minPriceRatio);
       }
     };
     load();
@@ -65,8 +67,6 @@ export function DynamicSettings() {
     };
 
     loadMeta();
-    const i = setInterval(loadMeta, 2000);
-    return () => clearInterval(i);
   }, []);
 
   return (
@@ -81,7 +81,7 @@ export function DynamicSettings() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="text-sm">Min Volume (USDT)</label>
           <Input
@@ -92,12 +92,22 @@ export function DynamicSettings() {
         </div>
 
         <div>
-          <label className="text-sm">Min Spread (%)</label>
+          <label className="text-sm">Min Ratio (%)</label>
           <Input
             type="number"
-            step="0.01"
-            value={minSpread}
-            onChange={(e) => setMinSpread(+e.target.value)}
+            step={0.01}
+            value={minPriceRatio}
+            onChange={(e) => setMinPriceRatio(+e.target.value)}
+          />
+        </div>
+        
+        <div>
+          <label className="text-sm">Max Allow Ratio (%)</label>
+          <Input
+            type="number"
+            step={0.01}
+            value={maxAllowedRatio}
+            onChange={(e) => setMaxAllowedRatio(+e.target.value)}
           />
         </div>
       </div>

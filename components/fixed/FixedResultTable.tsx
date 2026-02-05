@@ -25,7 +25,7 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
           <TableRow>
             <TableHead>Pair</TableHead>
             <TableHead>Count</TableHead>
-            <TableHead>Spread %</TableHead>
+            <TableHead>Ratio %</TableHead>
             <TableHead>Profit</TableHead>
             <TableHead>Last Seen</TableHead>
             <TableHead>Action</TableHead>
@@ -37,7 +37,7 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
             <TableRow key={`${r.pair}-${r.exchange1}`}>
               <TableCell>{r.pair}</TableCell>
               <TableCell className="font-bold">{r.count}</TableCell>
-              <TableCell>{r.last.spread.toFixed(2)}</TableCell>
+              <TableCell>{r.last.ratio.toFixed(2)}</TableCell>
               <TableCell>{r.last.profit.toFixed(2)}</TableCell>
               <TableCell>
                 {new Date(r.last.ts).toLocaleTimeString()}

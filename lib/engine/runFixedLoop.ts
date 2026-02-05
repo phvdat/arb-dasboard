@@ -12,6 +12,8 @@ const PATH = DYNAMIC_DATA_PATH
 
 export async function runFixedLoop() {
   const json = JSON.parse(fs.readFileSync(PATH, 'utf8'));
+  const minPriceRatio = json.config.minPriceRatio || 1.006;
+  const maxAllowedRatio = json.config.maxAllowedRatio || 2;
   if (!startFixed()) {
     console.log('[Fixed] already running');
     return;
@@ -37,7 +39,7 @@ export async function runFixedLoop() {
           const ob1 = await ex1.fetchOrderBook(pair);
           const ob2 = await ex2.fetchOrderBook(pair);
           
-          const r = calcBestTwoWay(ob1, ob2, json.config.minSpread);
+          const r = calcBestTwoWay(ob1, ob2, minPriceRatio,maxAllowedRatio);
 
           if (r && r.qty > 0) {
             updateFixedResult(
@@ -46,7 +48,7 @@ export async function runFixedLoop() {
                 pair,
                 exchange1,
                 exchange2,
-                spread: r.spread,
+                ratio: r.ratio,
                 profit: r.profit,
                 ts: Date.now(),
               }

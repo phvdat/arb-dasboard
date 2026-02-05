@@ -1,19 +1,18 @@
 import {
+  shouldDynamicRun,
   startDynamic,
   stopDynamic,
-  shouldDynamicRun,
 } from './runtime';
 
-import { excludePairs, filterByVolume } from './filter';
+import { getCachedPairs } from './getPairs';
 import { scanPair } from './runnerDynamic';
 import { throttle } from './throttle';
-import { getUSDTMarkets } from './marketCache';
-import { intersectPairs } from './exchangePool';
 
 type DynamicParams = {
   exchanges: string[];
   minVolume: number;
-  minSpread: number;
+  minPriceRatio: number;
+  maxAllowedRatio: number;
   excludePairs: string[];
 };
 
@@ -21,7 +20,8 @@ export async function runDynamicLoop(params: DynamicParams) {
   const {
     exchanges,
     minVolume,
-    minSpread,
+    minPriceRatio,
+    maxAllowedRatio,
     excludePairs: exclude,
   } = params;
 
@@ -44,26 +44,20 @@ export async function runDynamicLoop(params: DynamicParams) {
           const ex2 = exchanges[j];
 
           try {
-            const m1 = await getUSDTMarkets(ex1);
-            const m2 = await getUSDTMarkets(ex2);
-
-            let pairs = intersectPairs(m1, m2);
-            pairs = excludePairs(pairs, exclude);
-
-            // volume filter (chỉ check ở exchange 1)
-            pairs = await filterByVolume(ex1, pairs, minVolume);
-
+            console.time("getCachedPairs");
+            const pairs = await getCachedPairs(ex1, ex2, new Set(exclude), minVolume);
             const tasks = pairs.map(
               (pair) => async () => {
                 if (!shouldDynamicRun()) return;
 
                 try {
-                  await scanPair(pair, ex1, ex2, minSpread);
+                  await scanPair(pair, ex1, ex2, minPriceRatio, maxAllowedRatio);
                 } catch {
                   // skip pair lỗi
                 }
               }
             );
+            console.timeEnd("getCachedPairs");
 
             await throttle(tasks, 10);
           } catch (e) {

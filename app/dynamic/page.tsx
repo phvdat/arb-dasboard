@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
-import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
-import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import Loading from "@/components/common/Loading";
+import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
+import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
+import { useEffect, useState } from "react";
 
 export default function DynamicPage() {
   const [data, setData] = useState<any>(null);
@@ -18,7 +16,7 @@ export default function DynamicPage() {
     };
 
     load();
-    const i = setInterval(load, 3000);
+    const i = setInterval(load, 10000);
     return () => clearInterval(i);
   }, []);
 
