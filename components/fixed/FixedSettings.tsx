@@ -2,13 +2,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { endpoint } from "@/config/endpoint";
+import { useMetaSWR } from "@/swr/useMetaSWR";
+import { useState } from "react";
+import { toast } from "sonner";
+import { mutate } from "swr";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
-import { toast } from "sonner";
-import { useMetaSWR } from "@/swr/useMetaSWR";
-import { mutate } from "swr";
-import { endpoint } from "@/config/endpoint";
 
 export function FixedSettings() {
   const [starting, setStarting] = useState(false);
@@ -19,9 +19,17 @@ export function FixedSettings() {
   const start = async () => {
     try {
       setStarting(true);
-      await fetch(endpoint.fixed.start, { method: "POST" });
-      mutate(endpoint.meta);
-      toast("Fixed mode started");
+      const res = await fetch(endpoint.fixed.start, { method: "POST" });
+      switch (res.status) {
+        case 200:
+          mutate(endpoint.meta);
+          toast.success("Fixed mode started");
+          break;
+        case 409:
+          const { message } = await res.json();
+          toast.error(message);
+          break;
+      }
     } finally {
       setStarting(false);
     }

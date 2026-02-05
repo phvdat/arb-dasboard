@@ -19,14 +19,14 @@ export async function POST(req: Request) {
 
     if (!exchanges || exchanges.length < 2) {
       return NextResponse.json(
-        { error: 'At least 2 exchanges required' },
+        { message: 'At least 2 exchanges required' },
         { status: 400 }
       );
     }
 
     if (!acquireLock('dynamic')) {
       return NextResponse.json(
-        { error: 'Another mode is running' },
+        { message: 'Another mode is running' },
         { status: 409 }
       );
     }

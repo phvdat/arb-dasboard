@@ -27,7 +27,7 @@ export function DynamicSettings() {
   async function start() {
     try {
       setStarting(true);
-      await fetch(endpoint.dynamic.start, {
+      const res = await fetch(endpoint.dynamic.start, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -37,8 +37,16 @@ export function DynamicSettings() {
           maxAllowedRatio,
         }),
       });
-      mutate(endpoint.meta);
-      toast("Dynamic mode started");
+      switch (res.status) {
+        case 200:
+          mutate(endpoint.meta);
+          toast.success("Dynamic mode started");
+          break;
+        case 409:
+          const { message } = await res.json();
+          toast.error(message);
+          break;
+      }
     } finally {
       setStarting(false);
     }
@@ -48,7 +56,7 @@ export function DynamicSettings() {
     try {
       setStopping(true);
       await fetch(endpoint.dynamic.stop, { method: "POST" });
-      toast("Dynamic mode stopped");
+      toast.success("Dynamic mode stopped");
       mutate(endpoint.meta);
     } finally {
       setStopping(false);
@@ -128,7 +136,10 @@ export function DynamicSettings() {
         >
           Stop
         </Button>
-        <ClearButton label="Clear Dynamic Data" endpoint={endpoint.dynamic.clear} />
+        <ClearButton
+          label="Clear Dynamic Data"
+          endpoint={endpoint.dynamic.clear}
+        />
       </div>
     </div>
   );

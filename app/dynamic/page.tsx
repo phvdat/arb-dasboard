@@ -5,11 +5,12 @@ import Loading from "@/components/common/Loading";
 import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
 import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
 import { endpoint } from "@/config/endpoint";
+import { useMetaSWR } from "@/swr/useMetaSWR";
 import { useEffect, useState } from "react";
 
 export default function DynamicPage() {
   const [data, setData] = useState<any>(null);
-
+  const { data: meta } = useMetaSWR();
   useEffect(() => {
     const load = async () => {
       const res = await fetch(endpoint.dynamic.status);
@@ -17,11 +18,14 @@ export default function DynamicPage() {
     };
 
     load();
-    const i = setInterval(load, 3000);
+    const i = setInterval(() => {
+      if (meta?.runningMode !== "dynamic") return;
+      load();
+    }, 3000);
     return () => clearInterval(i);
-  }, []);
+  }, [meta?.runningMode]);
 
-  if (!data) return <Loading />
+  if (!data) return <Loading />;
 
   return (
     <div className="p-6 space-y-6">

@@ -5,7 +5,7 @@ import { runFixedLoop } from '@/lib/engine/runFixedLoop';
 
 export async function POST(req: Request) {
   if (!acquireLock('fixed')) {
-    return NextResponse.json({ error: 'Another mode running' }, { status: 409 });
+    return NextResponse.json({ message: 'Another mode running' }, { status: 409 });
   }
 
   startMode('fixed');
