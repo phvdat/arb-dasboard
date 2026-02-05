@@ -11,12 +11,14 @@ import { useState } from "react";
 import { ArbitrageResult } from "@/lib/store/type";
 import { endpoint } from "@/config/endpoint";
 import { DetailModal } from "../common/DetailModal";
+import { toast } from "sonner";
 
 export function ResultTable({ data }: { data: ArbitrageResult[] }) {
   const [selected, setSelected] = useState<ArbitrageResult | null>(null);
 
   async function addToFixed(r: ArbitrageResult) {
-    await fetch(endpoint.fixed.add, {
+    try {
+      const res = await fetch(endpoint.fixed.pairs, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -25,6 +27,17 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
         exchange2: r.exchange2,
       }),
     });
+
+    if (res.status == 200) {
+      toast.success(`Pair ${r.pair} added to fixed pairs`);
+    }
+    if (res.status == 400) {
+      const { message } = await res.json();
+      toast.error(message);
+    }
+    }finally {
+      toast.error("Failed to add to fixed pairs");
+    }
   }
 
   const sorted = [...data].sort((a, b) => b.count - a.count);

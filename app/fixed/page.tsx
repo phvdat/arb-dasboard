@@ -8,6 +8,8 @@ import { FixedSettings } from "@/components/fixed/FixedSettings";
 import Loading from "@/components/common/Loading";
 import { endpoint } from "@/config/endpoint";
 import { useMetaSWR } from "@/swr/useMetaSWR";
+import { FixedPairsList } from "@/components/fixed/FixedPairsList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function FixedPage() {
   const [data, setData] = useState<any>(null);
@@ -32,7 +34,18 @@ export default function FixedPage() {
   return (
     <div className="p-6 space-y-6">
       <FixedSettings />
-      <FixedTabs results={data.results || {}} />
+      <Tabs defaultValue="pairs-list">
+        <TabsList  className="w-full">
+          <TabsTrigger value="scan-result">Results</TabsTrigger>
+          <TabsTrigger value="pairs-list">Pairs</TabsTrigger>
+        </TabsList>
+        <TabsContent value="scan-result">
+          <FixedTabs results={data.results || {}} />
+        </TabsContent>
+        <TabsContent value="pairs-list">
+          <FixedPairsList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

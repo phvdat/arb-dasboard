@@ -49,7 +49,9 @@ export function addFixedPair(p: FixedPair) {
   if (!exists) {
     store.config.pairs.push(p);
     saveStore()
+    return true
   }
+  return false
 }
 
 export function getFixedPairs(): FixedPair[] {

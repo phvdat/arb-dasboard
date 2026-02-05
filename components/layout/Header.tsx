@@ -4,12 +4,12 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useMetaSWR } from "@/swr/useMetaSWR";
-import { ChartBar, ChartNoAxesCombined, LogOut } from "lucide-react";
+import { ChartNoAxesCombined, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "../ui/button";
-import { signIn, signOut } from "next-auth/react"
 import { ModeToggle } from "../common/ModeToggle";
+import { Button } from "../ui/button";
 
 export function Header() {
   const { data: meta } = useMetaSWR();
@@ -17,8 +17,8 @@ export function Header() {
   const status =
     meta?.status === "running"
       ? meta.runningMode === "dynamic"
-        ? "Dynamic Running"
-        : "Fixed Running"
+        ? "Dynamic"
+        : "Fixed"
       : "Idle";
 
   return (
@@ -38,7 +38,7 @@ export function Header() {
         </nav>
       </div>
       <div className="flex gap-2 md:gap-4 items-center">
-        <Badge variant={meta?.status === "running" ? "default" : "secondary"} onClick={()=>signIn()}>
+        <Badge variant={meta?.status === "running" ? "default" : "secondary"}>
           {status}
         </Badge>
         <ModeToggle/>
