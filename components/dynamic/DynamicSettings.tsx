@@ -128,7 +128,7 @@ export function DynamicSettings() {
         >
           Stop
         </Button>
-        <ClearButton label="Clear Dynamic Data" endpoint="/api/dynamic/clear" />
+        <ClearButton label="Clear Dynamic Data" endpoint={endpoint.dynamic.clear} />
       </div>
     </div>
   );

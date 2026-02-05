@@ -61,7 +61,7 @@ export function FixedSettings() {
           Stop
         </Button>
 
-        <ClearButton label="Clear Fixed Data" endpoint="/api/fixed/clear" />
+        <ClearButton label="Clear Fixed Data" endpoint={endpoint.fixed.clear} />
       </div>
     </div>
   );

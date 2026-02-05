@@ -4,6 +4,7 @@
 import Loading from "@/components/common/Loading";
 import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
 import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
+import { endpoint } from "@/config/endpoint";
 import { useEffect, useState } from "react";
 
 export default function DynamicPage() {
@@ -11,7 +12,7 @@ export default function DynamicPage() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/dynamic/status");
+      const res = await fetch(endpoint.dynamic.status);
       setData(await res.json());
     };
 

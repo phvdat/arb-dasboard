@@ -6,12 +6,13 @@ import { useEffect, useState } from 'react';
 import { FixedTabs } from '@/components/fixed/FixedTabs';
 import { FixedSettings } from '@/components/fixed/FixedSettings';
 import Loading from '@/components/common/Loading';
+import { endpoint } from '@/config/endpoint';
 
 export default function FixedPage() {
   const [data, setData] = useState<any>(null);
 
   const fetchData = async () => {
-    const res = await fetch('/api/fixed/status');
+    const res = await fetch(endpoint.fixed.status);
     setData(await res.json());
   };
 

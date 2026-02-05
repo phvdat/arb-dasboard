@@ -4,10 +4,15 @@ export const endpoint = {
         start: '/api/dynamic/start',
         stop: '/api/dynamic/stop',
         config: '/api/dynamic/config',
+        status: '/api/dynamic/status',
+        clear: '/api/dynamic/clear',
     },
     fixed: {
         start: '/api/fixed/start',
         stop: '/api/fixed/stop',
         config: '/api/fixed/config',
+        add: '/api/fixed/add',
+        status: '/api/fixed/status',
+        clear: '/api/fixed/clear',
     }
 };

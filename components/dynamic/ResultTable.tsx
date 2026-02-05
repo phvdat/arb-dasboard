@@ -8,21 +8,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { DetailModal } from "./DetailModal";
 import { ArbitrageResult } from "@/lib/store/type";
+import { endpoint } from "@/config/endpoint";
+import { DetailModal } from "../common/DetailModal";
 
 export function ResultTable({ data }: { data: ArbitrageResult[] }) {
-  const [open, setOpen] = useState(false);
-  const [detailKey, setDetailKey] = useState<string | null>(null);
-
-  function openDetail(r: ArbitrageResult) {
-    const key = `${r.pair}|${r.exchange1}|${r.exchange2}`;
-    setDetailKey(key);
-    setOpen(true);
-  }
+  const [selected, setSelected] = useState<ArbitrageResult | null>(null);
 
   async function addToFixed(r: ArbitrageResult) {
-    await fetch("/api/fixed/add", {
+    await fetch(endpoint.fixed.add, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -52,28 +46,18 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
 
         <TableBody>
           {sorted.map((r) => (
-            <TableRow
-              key={`${r.pair}-${r.exchange1}-${r.exchange2}`}
-            >
-              <TableCell className="font-medium">
-                {r.pair}
-              </TableCell>
+            <TableRow key={`${r.pair}-${r.exchange1}-${r.exchange2}`}>
+              <TableCell className="font-medium">{r.pair}</TableCell>
 
               <TableCell>
                 {r.exchange1} → {r.exchange2}
               </TableCell>
 
-              <TableCell className="font-bold">
-                {r.count}
-              </TableCell>
+              <TableCell className="font-bold">{r.count}</TableCell>
 
-              <TableCell>
-                {r.last ? r.last.ratio.toFixed(2) : "-"}
-              </TableCell>
+              <TableCell>{r.last ? r.last.ratio.toFixed(2) : "-"}</TableCell>
 
-              <TableCell>
-                {r.last ? r.last.profit.toFixed(2) : "-"}
-              </TableCell>
+              <TableCell>{r.last ? r.last.profit.toFixed(2) : "-"}</TableCell>
 
               <TableCell className="text-xs text-muted-foreground">
                 {r.last
@@ -92,15 +76,12 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => openDetail(r)}
+                  onClick={() => setSelected(r)}
                 >
                   Detail
                 </Button>
 
-                <Button
-                  size="sm"
-                  onClick={() => addToFixed(r)}
-                >
+                <Button size="sm" onClick={() => addToFixed(r)}>
                   Add to Fixed
                 </Button>
               </TableCell>
@@ -109,11 +90,9 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
         </TableBody>
       </Table>
 
-      <DetailModal
-        open={open}
-        onOpenChange={setOpen}
-        detailKey={detailKey}
-      />
+      {selected && (
+        <DetailModal result={selected} onClose={() => setSelected(null)} />
+      )}
     </>
   );
 }
