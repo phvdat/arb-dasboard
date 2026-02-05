@@ -4,12 +4,13 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useMetaSWR } from "@/swr/useMetaSWR";
-import { useSession } from "next-auth/react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "../ui/button";
+import { signIn, signOut } from "next-auth/react"
 
 export function Header() {
-  const { data : session } = useSession();
   const { data: meta } = useMetaSWR();
 
   const status =
@@ -31,10 +32,14 @@ export function Header() {
           <NavLink href="/fixed">Fixed</NavLink>
         </nav>
       </div>
-
-      <Badge variant={meta?.status === "running" ? "default" : "secondary"}>
-        {status}
-      </Badge>
+      <div className="flex gap-1 items-center">
+        <Badge variant={meta?.status === "running" ? "default" : "secondary"} onClick={()=>signIn()}>
+          {status}
+        </Badge>
+        <Button onClick={()=>signOut()}>
+          <LogOut />
+        </Button>
+      </div>
     </header>
   );
 }
