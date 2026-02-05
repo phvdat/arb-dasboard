@@ -35,7 +35,7 @@ export async function runDynamicLoop(params: DynamicParams) {
   try {
     while (shouldDynamicRun()) {
       console.log('[Dynamic] scanning...');
-
+      console.time("Start [Dynamic]");
       for (let i = 0; i < exchanges.length; i++) {
         for (let j = i + 1; j < exchanges.length; j++) {
           if (!shouldDynamicRun()) break;
@@ -65,6 +65,7 @@ export async function runDynamicLoop(params: DynamicParams) {
           }
         }
       }
+      console.timeEnd("Start [Dynamic]");
     }
   } finally {
     stopDynamic();
