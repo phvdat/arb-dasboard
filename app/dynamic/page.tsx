@@ -6,38 +6,43 @@ import Loading from "@/components/common/Loading";
 import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
 import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
 import { endpoint } from "@/config/endpoint";
+import { mergeDynamicWithFixed } from "@/helpers/mergeDynamicWithFixed";
 import { usePageVisible } from "@/hooks/usePageVisible";
 import { useDynamicStatusSWR } from "@/swr/useDynamicStatusSWR";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
+import useSWR from "swr";
+
+const fetcher = async (url: string)=> {
+  const res = await fetch(url);
+  return await res.json();
+}
 
 export default function DynamicPage() {
-  const [data, setData] = useState<any>(null);
   const visible = usePageVisible();
   const { data: dynamicStatus } = useDynamicStatusSWR();
   const isRunning = dynamicStatus?.status === "Running";
+  const {data: fixedData} = useSWR(endpoint.fixed.results, fetcher);
+  const {data: dynamicData, mutate} = useSWR(endpoint.dynamic.results, fetcher);
 
-  const load = useCallback(async () => {
-    const res = await fetch(endpoint.dynamic.results);
-    setData(await res.json());
-  }, []);
+  const dataSerialized = mergeDynamicWithFixed(
+    dynamicData?.results || {},
+    fixedData?.results || {}
+  );
 
   useEffect(() => {
     if (!visible || !isRunning) return;
-    load();
-    const i = setInterval(load, 3000);
+    mutate();
+    const i = setInterval(mutate, 3000);
     return () => clearInterval(i);
-  }, [isRunning, load, visible]);
+  }, [isRunning, mutate, visible]);
 
-  useEffect(() => {
-    load();
-  }, []);
 
-  if (!data) return <Loading />;
+  if (!dataSerialized) return <Loading />;
 
   return (
     <div className="p-6 space-y-6">
       <DynamicSettings />
-      <DynamicTabs results={data.results || {}} />
+      <DynamicTabs results={dataSerialized || {}} />
     </div>
   );
 }

@@ -15,11 +15,8 @@ import { DetailModal } from "../common/DetailModal";
 import { endpoint } from "@/config/endpoint";
 import { toast } from "sonner";
 import { mutate } from "swr";
-type FixedPair = {
-  pair: string;
-  exchange1: string;
-  exchange2: string;
-};
+import { FixedPair } from "@/lib/store/fixedStore";
+
 export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
   const [selected, setSelected] = useState<ArbitrageResult | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);

@@ -9,7 +9,7 @@ import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { ResultTable } from "./ResultTable";
 
 type Props = {
-  results: Record<string, ArbitrageResult>;
+  results: Record<string, ArbitrageResult & { inFixed: boolean }>;
 };
 
 export function DynamicTabs({ results }: Props) {

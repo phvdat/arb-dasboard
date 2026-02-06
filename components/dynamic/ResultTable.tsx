@@ -12,9 +12,17 @@ import { ArbitrageResult } from "@/lib/store/type";
 import { endpoint } from "@/config/endpoint";
 import { DetailModal } from "../common/DetailModal";
 import { toast } from "sonner";
+import { FixedPair } from "@/lib/store/fixedStore";
+import { mutate } from "swr";
+import { Plus, Trash } from "lucide-react";
 
-export function ResultTable({ data }: { data: ArbitrageResult[] }) {
+export function ResultTable({
+  data,
+}: {
+  data: (ArbitrageResult & { inFixed: boolean })[];
+}) {
   const [selected, setSelected] = useState<ArbitrageResult | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   async function addToFixed(r: ArbitrageResult) {
     try {
@@ -36,7 +44,25 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
         toast.error(message);
       }
     } finally {
-      // 
+      //
+    }
+  }
+  async function remove(p: FixedPair) {
+    const id = `${p.pair}|${p.exchange1}|${p.exchange2}`;
+    setRemovingId(id);
+    try {
+      const res = await fetch(
+        `${endpoint.fixed.pairs}?id=${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (res.status == 200) {
+        mutate(endpoint.fixed.results);
+        toast.success(`Pair ${p.pair} removed`);
+      }
+    } finally {
+      setRemovingId(null);
     }
   }
 
@@ -93,10 +119,22 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
                 >
                   Detail
                 </Button>
-
-                <Button size="sm" onClick={() => addToFixed(r)}>
-                  Add to Fixed
-                </Button>
+                {r.inFixed ? (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    loading={
+                      removingId === `${r.pair}|${r.exchange1}|${r.exchange2}`
+                    }
+                    onClick={() => remove(r)}
+                  >
+                    <Trash/> In Fixed
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={() => addToFixed(r)}>
+                    <Plus/> to Fixed
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}
