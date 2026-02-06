@@ -10,6 +10,9 @@ import { DYNAMIC_DATA_PATH } from '../constants/paths';
 import fs from 'fs';
 const PATH = DYNAMIC_DATA_PATH
 
+const LOG_INTERVAL = 3 * 60 * 1000; // 3 phút
+let lastFixedLog = 0;
+
 export async function runFixedLoop() {
   const json = JSON.parse(fs.readFileSync(PATH, 'utf8'));
   const minPriceRatio = json.config.minPriceRatio || 1.006;
@@ -23,8 +26,8 @@ export async function runFixedLoop() {
 
   try {
     while (shouldFixedRun()) {
+      const start = Date.now();
       const pairs = getFixedPairs();
-      console.time(`[Fixed] 1 loop`);
       for (const p of pairs) {
         if (!shouldFixedRun()) break;
 
@@ -38,7 +41,7 @@ export async function runFixedLoop() {
 
           const ob1 = await ex1.fetchOrderBook(pair);
           const ob2 = await ex2.fetchOrderBook(pair);
-          const r = calcBestTwoWay(ob1, ob2, minPriceRatio,maxAllowedRatio);
+          const r = calcBestTwoWay(ob1, ob2, minPriceRatio, maxAllowedRatio);
 
           if (r && r.qty > 0) {
             updateFixedResult(
@@ -57,7 +60,13 @@ export async function runFixedLoop() {
           console.error('[Fixed] pair error', e);
         }
       }
-      console.timeEnd(`[Fixed] 1 loop`);
+      const now = Date.now();
+      if (now - lastFixedLog >= LOG_INTERVAL) {
+        console.log(
+          `[Fixed] loop took ${(now - start)} ms | pairs=${pairs.length}`
+        );
+        lastFixedLog = now;
+      }
     }
   } finally {
     stopFixed();
