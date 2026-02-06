@@ -10,17 +10,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ArbitrageResult } from "@/lib/store/type";
+import { ArbitrageResult, Pair } from "@/lib/store/type";
 import { DetailModal } from "../common/DetailModal";
 import { endpoint } from "@/config/endpoint";
 import { toast } from "sonner";
 import { mutate } from "swr";
-import { FixedPair } from "@/lib/store/fixedStore";
 
 export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
   const [selected, setSelected] = useState<ArbitrageResult | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
-  async function remove(p: FixedPair) {
+  async function remove(p: Pair) {
     const id = `${p.pair}|${p.exchange1}|${p.exchange2}`;
     setRemovingId(id);
     try {

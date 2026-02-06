@@ -2,19 +2,15 @@
 import fs from 'fs';
 import path from 'path';
 import { FIXED_DATA_PATH } from '../constants/paths';
-import { ArbitrageResult } from './type';
+import { ArbitrageResult, Pair } from './type';
 const MAX_HISTORY = 100
 const PATH = FIXED_DATA_PATH
 
-export type FixedPair = {
-  pair: string;
-  exchange1: string;
-  exchange2: string;
-};
+
 
 export type FixedStore = {
   config: {
-    pairs: FixedPair[];
+    pairs: Pair[];
   };
   results: Record<string, ArbitrageResult>;
 };
@@ -38,7 +34,7 @@ function saveStore() {
   fs.writeFileSync(PATH, JSON.stringify(store, null, 2));
 }
 
-export function addFixedPair(p: FixedPair) {
+export function addFixedPair(p: Pair) {
   loadStore();
   const exists = store.config.pairs.some(
     (x) =>
@@ -54,7 +50,7 @@ export function addFixedPair(p: FixedPair) {
   return false
 }
 
-export function getFixedPairs(): FixedPair[] {
+export function getFixedPairs(): Pair[] {
   loadStore();
   return store.config.pairs;
 }
@@ -101,7 +97,7 @@ export function updateFixedResult(key: string, data: {
   saveStore();
 }
 
-export function removeFixedPair(p: FixedPair) {  
+export function removeFixedPair(p: Pair) {  
   loadStore();
 
   store.config.pairs = store.config.pairs.filter(

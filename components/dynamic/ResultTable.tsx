@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ArbitrageResult } from "@/lib/store/type";
+import { ArbitrageResult, Pair } from "@/lib/store/type";
 import { endpoint } from "@/config/endpoint";
 import { DetailModal } from "../common/DetailModal";
 import { toast } from "sonner";
-import { FixedPair } from "@/lib/store/fixedStore";
 import { mutate } from "swr";
 import { Plus, Trash } from "lucide-react";
+import { Switch } from "../ui/switch";
 
 export function ResultTable({
   data,
@@ -47,7 +47,7 @@ export function ResultTable({
       //
     }
   }
-  async function remove(p: FixedPair) {
+  async function remove(p: Pair) {
     const id = `${p.pair}|${p.exchange1}|${p.exchange2}`;
     setRemovingId(id);
     try {
@@ -66,6 +66,25 @@ export function ResultTable({
     }
   }
 
+  const updateSuspended = async (id: string, suspended: boolean) => {
+    try {
+      const res = await fetch(
+        `${endpoint.dynamic.pairs}?id=${encodeURIComponent(id)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ suspended }),
+        },
+      );
+      if (res.status == 200) {
+        mutate(endpoint.dynamic.results);
+        toast.success(`Pair ${id} suspended status updated`);
+      }
+    } finally {
+      //
+    }
+  };
+
   const sorted = [...data].sort((a, b) => b.count - a.count);
 
   return (
@@ -80,12 +99,13 @@ export function ResultTable({
             <TableHead>Last Profit</TableHead>
             <TableHead>Last Seen</TableHead>
             <TableHead>Action</TableHead>
+            <TableHead>Suspended</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {sorted.map((r) => (
-            <TableRow key={`${r.pair}-${r.exchange1}-${r.exchange2}`}>
+            <TableRow key={`${r.pair}-${r.exchange1}-${r.exchange2}`} className={r.suspended ? 'opacity-50' : ''}>
               <TableCell className="font-medium">{r.pair}</TableCell>
 
               <TableCell>
@@ -128,13 +148,25 @@ export function ResultTable({
                     }
                     onClick={() => remove(r)}
                   >
-                    <Trash/> In Fixed
+                    <Trash /> In Fixed
                   </Button>
                 ) : (
                   <Button size="sm" onClick={() => addToFixed(r)}>
-                    <Plus/> to Fixed
+                    <Plus /> to Fixed
                   </Button>
                 )}
+              </TableCell>
+
+              <TableCell>
+                <Switch
+                  defaultChecked={r.suspended}
+                  onCheckedChange={(checked) =>
+                    updateSuspended(
+                      `${r.pair}|${r.exchange1}|${r.exchange2}`,
+                      checked,
+                    )
+                  }
+                />
               </TableCell>
             </TableRow>
           ))}

@@ -6,6 +6,7 @@ export const endpoint = {
         results: '/api/dynamic/results',
         status: '/api/dynamic/status',
         clear: '/api/dynamic/clear',
+        pairs: '/api/dynamic/pairs', 
     },
     fixed: {
         start: '/api/fixed/start',

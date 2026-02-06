@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import { DYNAMIC_DATA_PATH } from '../constants/paths';
-import { ArbitrageResult } from './type';
+import { ArbitrageResult, Pair } from './type';
 const MAX_HISTORY = 100;
 const DATA_PATH = DYNAMIC_DATA_PATH
 
@@ -70,5 +70,22 @@ export function updateResult(key: string, data: {
 export function setConfig(config: unknown) {
   loadStore();
   store.config = config;
+  saveStore();
+}
+
+export function updateSuspendedStatus(p: Pair, suspended: boolean) {
+  loadStore();
+  store.results = Object.fromEntries(
+    Object.entries(store.results).map(([k, v]) => {
+      if (
+        v.pair === p.pair &&
+        v.exchange1 === p.exchange1 &&
+        v.exchange2 === p.exchange2
+      ) {        
+        v.suspended = suspended;
+      }
+      return [k, v];
+    })
+  )
   saveStore();
 }
