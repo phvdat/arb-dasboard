@@ -101,7 +101,7 @@ export function updateFixedResult(key: string, data: {
   saveStore();
 }
 
-export function removeFixedPair(p: FixedPair) {
+export function removeFixedPair(p: FixedPair) {  
   loadStore();
 
   store.config.pairs = store.config.pairs.filter(
@@ -112,6 +112,12 @@ export function removeFixedPair(p: FixedPair) {
         x.exchange2 === p.exchange2
       )
   );
+  store.results = Object.fromEntries(
+    Object.entries(store.results).filter(
+      ([k, v]) =>
+        !(v.pair === p.pair && v.exchange1 === p.exchange1 && v.exchange2 === p.exchange2)
+    )
+  )
 
   saveStore()
 }

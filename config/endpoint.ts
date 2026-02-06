@@ -12,7 +12,7 @@ export const endpoint = {
         stop: '/api/fixed/stop',
         config: '/api/fixed/config',
         status: '/api/fixed/status',
-        results: '/api/dynamic/results',
+        results: '/api/fixed/results',
         clear: '/api/fixed/clear',
         pairs: '/api/fixed/pairs',
     }
