@@ -19,23 +19,23 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
   async function addToFixed(r: ArbitrageResult) {
     try {
       const res = await fetch(endpoint.fixed.pairs, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pair: r.pair,
-        exchange1: r.exchange1,
-        exchange2: r.exchange2,
-      }),
-    });
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pair: r.pair,
+          exchange1: r.exchange1,
+          exchange2: r.exchange2,
+        }),
+      });
 
-    if (res.status == 200) {
-      toast.success(`Pair ${r.pair} added to fixed pairs`);
-    }
-    if (res.status == 400) {
-      const { message } = await res.json();
-      toast.error(message);
-    }
-    }finally {
+      if (res.status == 200) {
+        toast.success(`Pair ${r.pair} added to fixed pairs`);
+      }
+      if (res.status == 400) {
+        const { message } = await res.json();
+        toast.error(message);
+      }
+    } finally {
       toast.error("Failed to add to fixed pairs");
     }
   }
@@ -63,7 +63,7 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
               <TableCell className="font-medium">{r.pair}</TableCell>
 
               <TableCell>
-                {r.exchange1} → {r.exchange2}
+                {r.exchange1.toUpperCase()} - {r.exchange2.toUpperCase()}
               </TableCell>
 
               <TableCell className="font-bold">{r.count}</TableCell>

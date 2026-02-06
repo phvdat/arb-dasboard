@@ -17,7 +17,7 @@ export function DetailModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {result.pair} — {result.exchange1} → {result.exchange2}
+            {result.pair} — {result.exchange1.toUpperCase()} - {result.exchange2.toUpperCase()}
           </DialogTitle>
         </DialogHeader>
 
