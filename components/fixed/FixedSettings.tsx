@@ -3,18 +3,18 @@
 
 import { Button } from "@/components/ui/button";
 import { endpoint } from "@/config/endpoint";
-import { useMetaSWR } from "@/swr/useMetaSWR";
 import { useState } from "react";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
+import { useFixedStatusSWR } from "@/swr/useFixedStatusSWR";
 
 export function FixedSettings() {
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const { data: meta } = useMetaSWR();
-  const isRunning = meta?.status === "running" && meta?.runningMode === "fixed";
+  const { data } = useFixedStatusSWR();
+  const isRunning = data?.status === "Running";
 
   const start = async () => {
     try {
@@ -22,7 +22,7 @@ export function FixedSettings() {
       const res = await fetch(endpoint.fixed.start, { method: "POST" });
       switch (res.status) {
         case 200:
-          mutate(endpoint.meta);
+          mutate(endpoint.fixed.status);
           toast.success("Fixed mode started");
           break;
         case 409:
@@ -39,7 +39,7 @@ export function FixedSettings() {
     try {
       setStopping(true);
       await fetch(endpoint.fixed.stop, { method: "POST" });
-      mutate(endpoint.meta);
+      mutate(endpoint.fixed.status);
       toast("Fixed mode stopped");
     } finally {
       setStopping(false);

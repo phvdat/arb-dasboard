@@ -1,3 +1,5 @@
+import { closeMode } from "./exchangePool";
+
 let fixedRunning = false;
 
 export function startFixed() {
@@ -8,6 +10,7 @@ export function startFixed() {
 
 export function stopFixed() {
   fixedRunning = false;
+  closeMode('fixed');
 }
 
 export function isFixedRunning() {

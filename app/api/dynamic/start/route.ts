@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { acquireLock } from '@/lib/lock';
-import { startMode } from '@/lib/store/metaStore';
 import { setConfig } from '@/lib/store/dynamicStore';
 import { runDynamicLoop } from '@/lib/engine/runDynamicLoop';
 
@@ -23,16 +21,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    if (!acquireLock('dynamic')) {
-      return NextResponse.json(
-        { message: 'Another mode is running' },
-        { status: 409 }
-      );
-    }
-
-    startMode('dynamic');
-
+    
     setConfig({
       exchanges,
       minVolume,

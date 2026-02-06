@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { intersectPairs } from './exchangePool';
+import { intersectPairs } from '../exchangePool';
 import { getUSDTMarkets } from './marketCache';
-import { filterByVolume } from './filter';
+import { filterByVolume } from './filterByVolume';
 
 const CACHE_DIR = './cache';
 const PAIR_TTL = 24 * 60 * 60 * 1000;

@@ -1,4 +1,4 @@
-import { getExchange } from './exchangePool';
+import { getExchange } from '../exchangePool';
 
 export async function getUSDTMarkets(
   exchangeId: string

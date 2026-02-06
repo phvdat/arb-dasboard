@@ -1,3 +1,5 @@
+import { closeMode } from "./exchangePool";
+
 let dynamicRunning = false;
 
 export function isDynamicRunning() {
@@ -12,6 +14,7 @@ export function startDynamic() {
 
 export function stopDynamic() {
   dynamicRunning = false;
+  closeMode('dynamic');
 }
 
 export function shouldDynamicRun() {

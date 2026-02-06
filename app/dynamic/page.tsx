@@ -7,25 +7,26 @@ import { DynamicSettings } from "@/components/dynamic/DynamicSettings";
 import { DynamicTabs } from "@/components/dynamic/DynamicTabs";
 import { endpoint } from "@/config/endpoint";
 import { usePageVisible } from "@/hooks/usePageVisible";
-import { useMetaSWR } from "@/swr/useMetaSWR";
+import { useDynamicStatusSWR } from "@/swr/useDynamicStatusSWR";
 import { useCallback, useEffect, useState } from "react";
 
 export default function DynamicPage() {
   const [data, setData] = useState<any>(null);
   const visible = usePageVisible();
-  const { data: meta } = useMetaSWR();
+  const { data: dynamicStatus } = useDynamicStatusSWR();
+  const isRunning = dynamicStatus?.status === "Running";
 
   const load = useCallback(async () => {
-    const res = await fetch(endpoint.dynamic.status);
+    const res = await fetch(endpoint.dynamic.results);
     setData(await res.json());
   }, []);
 
   useEffect(() => {
-    if (!visible || meta?.runningMode !== "dynamic") return;
+    if (!visible || !isRunning) return;
     load();
     const i = setInterval(load, 3000);
     return () => clearInterval(i);
-  }, [meta?.runningMode, load, visible]);
+  }, [isRunning, load, visible]);
 
   useEffect(() => {
     load();

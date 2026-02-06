@@ -3,13 +3,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { endpoint } from "@/config/endpoint";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { mutate } from "swr";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
-import { toast } from "sonner";
-import { endpoint } from "@/config/endpoint";
-import { useMetaSWR } from "@/swr/useMetaSWR";
-import { mutate } from "swr";
+import { useDynamicStatusSWR } from "@/swr/useDynamicStatusSWR";
 
 export function DynamicSettings() {
   const [starting, setStarting] = useState(false);
@@ -21,9 +21,8 @@ export function DynamicSettings() {
   const [minPriceRatio, setMinPriceRatio] = useState(1.006);
   const [maxAllowedRatio, setMaxAllowedRatio] = useState(2);
 
-  const { data: meta } = useMetaSWR();
-  const isRunning =
-    meta?.status === "running" && meta?.runningMode === "dynamic";
+  const { data } = useDynamicStatusSWR();
+  const isRunning = data?.status === "Running";
   async function start() {
     try {
       setStarting(true);
@@ -39,7 +38,8 @@ export function DynamicSettings() {
       });
       switch (res.status) {
         case 200:
-          mutate(endpoint.meta);
+          mutate(endpoint.fixed.status);
+          mutate(endpoint.dynamic.status);
           toast.success("Dynamic mode started");
           break;
         case 409:
@@ -57,7 +57,7 @@ export function DynamicSettings() {
       setStopping(true);
       await fetch(endpoint.dynamic.stop, { method: "POST" });
       toast.success("Dynamic mode stopped");
-      mutate(endpoint.meta);
+      mutate(endpoint.dynamic.status);
     } finally {
       setStopping(false);
     }

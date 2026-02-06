@@ -11,9 +11,3 @@ export const DYNAMIC_DATA_PATH = path.join(
   'data',
   'dynamic.json'
 );
-
-export const META_PATH = path.join(
-  process.cwd(),
-  'data',
-  'meta.json'
-);

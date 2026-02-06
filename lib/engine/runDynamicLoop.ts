@@ -2,12 +2,12 @@ import {
   shouldDynamicRun,
   startDynamic,
   stopDynamic,
-} from './runtime';
+} from './runtimeDynamic';
 
 import { buildRoundRobinPairs } from '@/lib/engine/helpers/buildRoundRobinPairs';
 import { runWithConcurrency } from '@/lib/engine/helpers/runWithConcurrency';
 import { scanPair } from './runnerDynamic';
-import { getCachedPairs } from './getPairs';
+import { getCachedPairs } from './helpers/getPairs';
 
 type DynamicParams = {
   exchanges: string[];
@@ -30,7 +30,7 @@ export async function runDynamicLoop(params: DynamicParams) {
   try {
     while (shouldDynamicRun()) {
       console.log(`[Dynamic] round ${round}`);
-      console.time('Dynamic round');
+      console.time(`[Dynamic round]`);
       const pairs = buildRoundRobinPairs(
         params.exchanges,
         round
@@ -63,7 +63,7 @@ export async function runDynamicLoop(params: DynamicParams) {
       // mỗi task = 1 exchange pair
       await runWithConcurrency(tasks, tasks.length);
 
-      console.timeEnd('Dynamic round');
+      console.timeEnd(`[Dynamic round]`);
       round++;
     }
   } finally {

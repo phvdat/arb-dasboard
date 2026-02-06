@@ -1,5 +1,5 @@
 import { updateResult } from '../store/dynamicStore';
-import { calcBestTwoWay, } from './arbitrage';
+import { calcBestTwoWay, } from './helpers/arbitrage';
 import { getExchange } from './exchangePool';
 
 export async function scanPair(

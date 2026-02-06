@@ -3,23 +3,28 @@
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useMetaSWR } from "@/swr/useMetaSWR";
 import { ChartNoAxesCombined, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "../common/ModeToggle";
 import { Button } from "../ui/button";
+import { useDynamicStatusSWR } from "@/swr/useDynamicStatusSWR";
+import { useFixedStatusSWR } from "@/swr/useFixedStatusSWR";
 
 export function Header() {
-  const { data: meta } = useMetaSWR();
-
+  const { data: dynamicStatus } = useDynamicStatusSWR();
+  const isDynamicRunning = dynamicStatus?.status === "Running";
+  const { data: fixedStatus } = useFixedStatusSWR();
+  const isFixedRunning = fixedStatus?.status === "Running";
   const status =
-    meta?.status === "running"
-      ? meta.runningMode === "dynamic"
+    isDynamicRunning && isFixedRunning
+      ? "All"
+      : isDynamicRunning
         ? "Dynamic"
-        : "Fixed"
-      : "Idle";
+        : isFixedRunning
+          ? "Fixed"
+          : "Idle";
 
   return (
     <header className="border-b px-6 py-3 flex items-center justify-between">
@@ -38,11 +43,11 @@ export function Header() {
         </nav>
       </div>
       <div className="flex gap-2 md:gap-4 items-center">
-        <Badge variant={meta?.status === "running" ? "default" : "secondary"}>
+        <Badge variant={status === "All" ? "default" : "secondary"}>
           {status}
         </Badge>
-        <ModeToggle/>
-        <Button onClick={()=>signOut()}>
+        <ModeToggle />
+        <Button onClick={() => signOut()}>
           <LogOut />
         </Button>
       </div>

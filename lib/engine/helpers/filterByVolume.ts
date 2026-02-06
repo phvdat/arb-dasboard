@@ -1,9 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
-import { getExchange } from "./exchangePool";
+import { getExchange } from "../exchangePool";
 
 const CACHE_DIR = path.resolve("./cache");
-const TTL = 7 * 24 * 60 * 60 * 1000; // 7 ngày
+const TTL = 30 * 24 * 60 * 60 * 1000; // 7 ngày
 
 type VolumeCacheFile = {
   ts: number;

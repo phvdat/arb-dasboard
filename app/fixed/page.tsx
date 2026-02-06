@@ -7,27 +7,28 @@ import { FixedTabs } from "@/components/fixed/FixedTabs";
 import { FixedSettings } from "@/components/fixed/FixedSettings";
 import Loading from "@/components/common/Loading";
 import { endpoint } from "@/config/endpoint";
-import { useMetaSWR } from "@/swr/useMetaSWR";
 import { FixedPairsList } from "@/components/fixed/FixedPairsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePageVisible } from "@/hooks/usePageVisible";
+import { useFixedStatusSWR } from "@/swr/useFixedStatusSWR";
 
 export default function FixedPage() {
   const [data, setData] = useState<any>(null);
   const visible = usePageVisible();
-  const { data: meta } = useMetaSWR();
+  const { data: fixedStatus } = useFixedStatusSWR();
+  const isRunning = fixedStatus?.status === "Running";
 
   const load = useCallback(async () => {
-    const res = await fetch(endpoint.fixed.status);
+    const res = await fetch(endpoint.fixed.results);
     setData(await res.json());
   }, []);
 
   useEffect(() => {
-    if (!visible || meta?.runningMode !== "fixed") return;
+    if (!visible || !isRunning) return;
     load();
     const i = setInterval(load, 3000);
     return () => clearInterval(i);
-  }, [meta?.runningMode, load, visible]);
+  }, [isRunning, load, visible]);
 
   useEffect(() => {
     load();

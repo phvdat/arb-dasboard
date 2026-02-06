@@ -1,4 +1,4 @@
-import { calcBestTwoWay } from './arbitrage';
+import { calcBestTwoWay } from './helpers/arbitrage';
 import { getFixedPairs, updateFixedResult } from '../store/fixedStore';
 import { getExchange } from './exchangePool';
 import {
@@ -24,7 +24,7 @@ export async function runFixedLoop() {
   try {
     while (shouldFixedRun()) {
       const pairs = getFixedPairs();
-
+      console.time(`[Fixed] 1 loop`);
       for (const p of pairs) {
         if (!shouldFixedRun()) break;
 
@@ -33,12 +33,11 @@ export async function runFixedLoop() {
           const exchange1 = p.exchange1;
           const exchange2 = p.exchange2;
 
-          const ex1 = getExchange(exchange1);
-          const ex2 = getExchange(exchange2);
+          const ex1 = getExchange(exchange1, 'fixed');
+          const ex2 = getExchange(exchange2, 'fixed');
 
           const ob1 = await ex1.fetchOrderBook(pair);
           const ob2 = await ex2.fetchOrderBook(pair);
-          
           const r = calcBestTwoWay(ob1, ob2, minPriceRatio,maxAllowedRatio);
 
           if (r && r.qty > 0) {
@@ -58,6 +57,7 @@ export async function runFixedLoop() {
           console.error('[Fixed] pair error', e);
         }
       }
+      console.timeEnd(`[Fixed] 1 loop`);
     }
   } finally {
     stopFixed();
