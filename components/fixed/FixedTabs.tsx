@@ -18,8 +18,8 @@ export function FixedTabs({
   const tabs = Object.keys(groups);
   const topPairs = Object.values(groups)
     .flat()
-    .slice(0, topNumber)
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => b.count - a.count)
+    .slice(0, topNumber);
 
   if (tabs.length === 0) {
     return <div className="text-muted-foreground">No fixed results yet</div>;
