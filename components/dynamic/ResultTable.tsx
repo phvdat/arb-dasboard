@@ -36,7 +36,7 @@ export function ResultTable({ data }: { data: ArbitrageResult[] }) {
         toast.error(message);
       }
     } finally {
-      toast.error("Failed to add to fixed pairs");
+      // 
     }
   }
 

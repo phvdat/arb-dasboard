@@ -28,7 +28,6 @@ export function DynamicTabs({ results }: Props) {
       </div>
     );
   }
-console.log(topNumber)
   return (
     <Tabs defaultValue="top-pairs">
       <ScrollArea>
