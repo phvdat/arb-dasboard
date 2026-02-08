@@ -85,7 +85,6 @@ export function ResultTable({
     }
   };
 
-  const sorted = [...data].sort((a, b) => b.count - a.count);
 
   return (
     <>
@@ -104,9 +103,20 @@ export function ResultTable({
         </TableHeader>
 
         <TableBody>
-          {sorted.map((r) => (
-            <TableRow key={`${r.pair}-${r.exchange1}-${r.exchange2}`} className={r.suspended ? 'opacity-50' : ''}>
-              <TableCell className="font-medium">{r.pair}</TableCell>
+          {data.map((r) => (
+            <TableRow
+              key={`${r.pair}-${r.exchange1}-${r.exchange2}`}
+              className={r.suspended ? "opacity-50" : ""}
+            >
+              <TableCell
+                className="font-medium cursor-pointer"
+                onClick={() => {
+                  navigator.clipboard.writeText(r.pair.split("/")[0]);
+                  toast.success("Copied to clipboard");
+                }}
+              >
+                {r.pair}
+              </TableCell>
 
               <TableCell>
                 {r.exchange1.toUpperCase()} - {r.exchange2.toUpperCase()}

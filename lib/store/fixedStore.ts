@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { FIXED_DATA_PATH } from '../constants/paths';
 import { ArbitrageResult, Pair } from './type';
-const MAX_HISTORY = 100
+const MAX_HISTORY = 100000
 const PATH = FIXED_DATA_PATH
 
 

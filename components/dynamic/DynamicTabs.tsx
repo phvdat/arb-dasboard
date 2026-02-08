@@ -16,12 +16,17 @@ export function DynamicTabs({ results }: Props) {
   const [topNumber, setTopNumber] = useState(100);
   const groups = groupResultsByExchange(results);
   const tabs = Object.keys(groups);
-  console.log(Object.values(groups).flat());
 
   const topPairs = Object.values(groups)
     .flat()
-    .sort((a, b) => b.count - a.count)
-    .slice(0, topNumber)
+    .sort(
+      (a, b) =>
+        (Number(a.suspended) || 0) - (Number(b.suspended) || 0) ||
+        b.count - a.count,
+    )
+    .slice(0, topNumber);
+
+  console.log(topPairs);
 
   if (tabs.length === 0) {
     return (

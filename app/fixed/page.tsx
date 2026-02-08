@@ -3,12 +3,14 @@
 "use client";
 
 import Loading from "@/components/common/Loading";
+import { FixedPairsList } from "@/components/fixed/FixedPairsList";
 import { FixedSettings } from "@/components/fixed/FixedSettings";
 import { FixedTabs } from "@/components/fixed/FixedTabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { endpoint } from "@/config/endpoint";
 import { usePageVisible } from "@/hooks/usePageVisible";
 import { useFixedStatusSWR } from "@/swr/useFixedStatusSWR";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import useSWR from "swr";
 
 
@@ -35,7 +37,18 @@ export default function FixedPage() {
   return (
     <div className="p-6 space-y-6">
       <FixedSettings />
-      <FixedTabs results={data.results || {}} />
+      <Tabs defaultValue="scan-result">
+        <TabsList className="w-full">
+          <TabsTrigger value="scan-result">Scan Results</TabsTrigger>
+          <TabsTrigger value="pairs-list">All Pairs</TabsTrigger>
+        </TabsList>
+        <TabsContent value="scan-result">
+          <FixedTabs results={data.results || {}} />
+        </TabsContent>
+        <TabsContent value="pairs-list">
+          <FixedPairsList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
