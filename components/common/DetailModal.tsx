@@ -34,7 +34,7 @@ export function DetailModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="max-h-[800px] overflow-y-auto border rounded">
+        <div className="max-h-[400px] overflow-y-auto border rounded">
           <Table>
             <TableHeader>
               <TableRow>
