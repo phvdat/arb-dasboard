@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { FIXED_DATA_PATH } from '../constants/paths';
 import { ArbitrageResult, Pair } from './type';
+import { TwoWayResult } from '../engine/helpers/arbitrage';
 const MAX_HISTORY = 100000
 const PATH = FIXED_DATA_PATH
 
@@ -62,6 +63,8 @@ export function updateFixedResult(key: string, data: {
   ratio: number;
   profit: number;
   ts: number;
+  quantity: number;
+  direction: string;
 }) {
   loadStore();
   if (!store.results[key]) {
@@ -74,6 +77,8 @@ export function updateFixedResult(key: string, data: {
         ratio: data.ratio,
         profit: data.profit,
         ts: data.ts,
+        quantity: data.quantity,
+        direction: data.direction,
       },
       history: [],
     };
@@ -86,6 +91,8 @@ export function updateFixedResult(key: string, data: {
     ratio: data.ratio,
     profit: data.profit,
     ts: data.ts,
+    quantity: data.quantity,
+    direction: data.direction,
   };
 
   r.history.push(r.last);
@@ -97,7 +104,7 @@ export function updateFixedResult(key: string, data: {
   saveStore();
 }
 
-export function removeFixedPair(p: Pair) {  
+export function removeFixedPair(p: Pair) {
   loadStore();
 
   store.config.pairs = store.config.pairs.filter(

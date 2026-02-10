@@ -85,7 +85,6 @@ export function ResultTable({
     }
   };
 
-
   return (
     <>
       <Table>
@@ -96,6 +95,8 @@ export function ResultTable({
             <TableHead>Count</TableHead>
             <TableHead>Last Ratio %</TableHead>
             <TableHead>Last Profit</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Direction</TableHead>
             <TableHead>Last Seen</TableHead>
             <TableHead>Action</TableHead>
             <TableHead>Suspended</TableHead>
@@ -128,6 +129,8 @@ export function ResultTable({
 
               <TableCell>{r.last ? r.last.profit.toFixed(2) : "-"}</TableCell>
 
+              <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
+              <TableCell>{r.last?.direction}</TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {r.last
                   ? new Date(r.last.ts).toLocaleString("vi-VN", {

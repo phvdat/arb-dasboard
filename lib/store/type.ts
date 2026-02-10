@@ -2,6 +2,8 @@ export type ArbitrageTick = {
   ratio: number;
   profit: number;
   ts: number;
+  quantity: number;
+  direction: string;
 };
 
 export type ArbitrageResult = {

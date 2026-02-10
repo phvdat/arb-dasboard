@@ -32,6 +32,8 @@ export function updateResult(key: string, data: {
   ratio: number;
   profit: number;
   ts: number;
+  quantity: number;
+  direction: string;
 }) {
   loadStore();
   if (!store.results[key]) {
@@ -44,6 +46,8 @@ export function updateResult(key: string, data: {
         ratio: data.ratio,
         profit: data.profit,
         ts: data.ts,
+        quantity: data.quantity,
+        direction: data.direction,
       },
       history: [],
     };
@@ -56,6 +60,8 @@ export function updateResult(key: string, data: {
     ratio: data.ratio,
     profit: data.profit,
     ts: data.ts,
+    quantity: data.quantity,
+    direction: data.direction,
   };
 
   r.history.push(r.last);
@@ -81,7 +87,7 @@ export function updateSuspendedStatus(p: Pair, suspended: boolean) {
         v.pair === p.pair &&
         v.exchange1 === p.exchange1 &&
         v.exchange2 === p.exchange2
-      ) {        
+      ) {
         v.suspended = suspended;
       }
       return [k, v];

@@ -27,6 +27,8 @@ export async function scanPair(
         ratio: r.ratio,
         profit: r.profit,
         ts: Date.now(),
+        quantity: r.qty,
+        direction: r.direction
       }
     );
   }

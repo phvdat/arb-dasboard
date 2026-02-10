@@ -48,6 +48,8 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
             <TableHead>Count</TableHead>
             <TableHead>Ratio %</TableHead>
             <TableHead>Profit</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Direction</TableHead>
             <TableHead>Last Seen</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>
@@ -60,6 +62,8 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
               <TableCell className="font-bold">{r.count}</TableCell>
               <TableCell>{r.last.ratio.toFixed(2)}</TableCell>
               <TableCell>{r.last.profit.toFixed(2)}</TableCell>
+              <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
+              <TableCell>{r.last?.direction}</TableCell>
               <TableCell>{new Date(r.last.ts).toLocaleTimeString()}</TableCell>
               <TableCell className="flex gap-2">
                 <Button
