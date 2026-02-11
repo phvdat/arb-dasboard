@@ -19,7 +19,7 @@ import { Switch } from "../ui/switch";
 export function ResultTable({
   data,
 }: {
-  data: (ArbitrageResult & { inFixed: boolean })[];
+  data: ArbitrageResult[];
 }) {
   const [selected, setSelected] = useState<ArbitrageResult | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);

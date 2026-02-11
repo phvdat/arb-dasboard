@@ -14,6 +14,7 @@ export type ArbitrageResult = {
     last: ArbitrageTick;
     suspended?: boolean;
     history: ArbitrageTick[];
+    [key: string]: unknown;
 };
 
 export type Pair = {
