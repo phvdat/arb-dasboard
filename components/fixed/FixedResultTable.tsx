@@ -60,7 +60,7 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
             <TableRow key={`${r.pair}-${r.exchange1}`}>
               <TableCell>{r.pair}</TableCell>
               <TableCell className="font-bold">{r.count}</TableCell>
-              <TableCell>{r.last.ratio.toFixed(2)}</TableCell>
+              <TableCell>{r.last.ratio.toFixed(4)}</TableCell>
               <TableCell>{r.last.profit.toFixed(2)}</TableCell>
               <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
               <TableCell>{r.last?.direction}</TableCell>

@@ -62,7 +62,7 @@ export function DetailModal({
                         second: "2-digit",
                       })}
                     </TableCell>
-                    <TableCell>{h.ratio.toFixed(2)}</TableCell>
+                    <TableCell>{h.ratio.toFixed(4)}</TableCell>
                     <TableCell>{h.profit.toFixed(2)}</TableCell>
                     <TableCell>{h.last?.quantity?.toFixed(2)}</TableCell>
                     <TableCell>{h.last?.direction}</TableCell>

@@ -125,7 +125,7 @@ export function ResultTable({
 
               <TableCell className="font-bold">{r.count}</TableCell>
 
-              <TableCell>{r.last ? r.last.ratio.toFixed(2) : "-"}</TableCell>
+              <TableCell>{r.last ? r.last.ratio.toFixed(4) : "-"}</TableCell>
 
               <TableCell>{r.last ? r.last.profit.toFixed(2) : "-"}</TableCell>
 
