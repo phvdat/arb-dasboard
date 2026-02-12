@@ -130,7 +130,7 @@ export function ResultTable({
               <TableCell>{r.last ? r.last.profit.toFixed(2) : "-"}</TableCell>
 
               <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
-              <TableCell>{r.last?.direction}</TableCell>
+              <TableCell>{r.last?.direction === "A_TO_B" ? `${r.exchange1} -> ${r.exchange2}` : `${r.exchange2} -> ${r.exchange1}`}</TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {r.last
                   ? new Date(r.last.ts).toLocaleString("vi-VN", {

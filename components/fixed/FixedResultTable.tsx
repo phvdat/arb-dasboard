@@ -63,7 +63,7 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
               <TableCell>{r.last.ratio.toFixed(4)}</TableCell>
               <TableCell>{r.last.profit.toFixed(2)}</TableCell>
               <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
-              <TableCell>{r.last?.direction}</TableCell>
+              <TableCell>{r.last?.direction === "A_TO_B" ? `${r.exchange1} -> ${r.exchange2}` : `${r.exchange2} -> ${r.exchange1}`}</TableCell>
               <TableCell>{new Date(r.last.ts).toLocaleTimeString()}</TableCell>
               <TableCell className="flex gap-2">
                 <Button
