@@ -65,7 +65,7 @@ export function DetailModal({
                     <TableCell>{h.ratio.toFixed(4)}</TableCell>
                     <TableCell>{h.profit.toFixed(2)}</TableCell>
                     <TableCell>{h.last?.quantity?.toFixed(2)}</TableCell>
-                    <TableCell>{h.last?.direction === "A_TO_B" ? `${h.exchange1} -> ${h.exchange2}` : `${h.exchange2} -> ${h.exchange1}`}</TableCell>
+                    <TableCell>{h.last?.direction === "A_TO_B" ? `${result.exchange1} -> ${result.exchange2}` : `${result.exchange2} -> ${result.exchange1}`}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>
