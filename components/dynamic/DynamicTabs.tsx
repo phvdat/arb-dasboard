@@ -1,13 +1,6 @@
 /* eslint-disable react-hooks/purity */
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArbitrageResult } from "@/lib/store/type";
-import { groupResultsByExchange } from "@/lib/utils/groupResults";
-import { useMemo, useState } from "react";
-import { Input } from "../ui/input";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { ResultTable } from "./ResultTable";
 import {
   Select,
   SelectContent,
@@ -15,9 +8,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { groupResultsByExchange } from "@/lib/utils/groupResults";
+import { ArbitrageTable } from "@/types/common";
+import { useMemo, useState } from "react";
+import { Input } from "../ui/input";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { ResultTable } from "./ResultTable";
 
 type Props = {
-  results: Record<string, ArbitrageResult>;
+  results: Record<string, ArbitrageTable>;
 };
 
 export function DynamicTabs({ results }: Props) {
@@ -27,59 +27,59 @@ export function DynamicTabs({ results }: Props) {
   const groups = useMemo(() => groupResultsByExchange(results), [results]);
   const tabs = Object.keys(groups);
 
-  const filteredGroups = useMemo(() => {
-    const now = Date.now();
+  // const filteredGroups = useMemo(() => {
+  //   const now = Date.now();
 
-    let filterFrom = 0;
+  //   let filterFrom = 0;
 
-    switch (timeFilter) {
-      case "5m":
-        filterFrom = now - 5 * 60 * 1000;
-        break;
-      case "15m":
-        filterFrom = now - 15 * 60 * 1000;
-        break;
-      case "1h":
-        filterFrom = now - 60 * 60 * 1000;
-        break;
-      case "24h":
-        filterFrom = now - 24 * 60 * 60 * 1000;
-        break;
-      case "2d":
-        filterFrom = now - 2 * 24 * 60 * 60 * 1000;
-        break;
-      case "3d":
-        filterFrom = now - 3 * 24 * 60 * 60 * 1000;
-        break;
-      case "1w":
-        filterFrom = now - 7 * 24 * 60 * 60 * 1000;
-        break;
-      default:
-        filterFrom = 0;
-    }
+  //   switch (timeFilter) {
+  //     case "5m":
+  //       filterFrom = now - 5 * 60 * 1000;
+  //       break;
+  //     case "15m":
+  //       filterFrom = now - 15 * 60 * 1000;
+  //       break;
+  //     case "1h":
+  //       filterFrom = now - 60 * 60 * 1000;
+  //       break;
+  //     case "24h":
+  //       filterFrom = now - 24 * 60 * 60 * 1000;
+  //       break;
+  //     case "2d":
+  //       filterFrom = now - 2 * 24 * 60 * 60 * 1000;
+  //       break;
+  //     case "3d":
+  //       filterFrom = now - 3 * 24 * 60 * 60 * 1000;
+  //       break;
+  //     case "1w":
+  //       filterFrom = now - 7 * 24 * 60 * 60 * 1000;
+  //       break;
+  //     default:
+  //       filterFrom = 0;
+  //   }
 
-    const result: typeof groups = {};
+  //   const result: typeof groups = {};
 
-    for (const [key, value] of Object.entries(groups)) {
-      const filterData = value
-        .filter((pair) => pair.last.ts >= filterFrom)
-        .map((pair) => ({ ...pair, history: pair.history.filter(his=> his.ts >= filterFrom) }));
-      result[key] = filterData;
-    }
+  //   for (const [key, value] of Object.entries(groups)) {
+  //     const filterData = value
+  //       .filter((pair) => pair.last.ts >= filterFrom)
+  //       .map((pair) => ({ ...pair, history: pair.history.filter(his=> his.ts >= filterFrom) }));
+  //     result[key] = filterData;
+  //   }
 
-    return result;
-  }, [groups, timeFilter]);
+  //   return result;
+  // }, [groups, timeFilter]);
 
-  const topPairs = useMemo(() => {
-    return Object.values(filteredGroups)
-      .flat()
-      .sort(
-        (a, b) =>
-          (Number(a.suspended) || 0) - (Number(b.suspended) || 0) ||
-          b.count - a.count,
-      )
-      .slice(0, topNumber);
-  }, [filteredGroups, topNumber]);
+  // const topPairs = useMemo(() => {
+  //   return Object.values(filteredGroups)
+  //     .flat()
+  //     .sort(
+  //       (a, b) =>
+  //         (Number(a.suspended) || 0) - (Number(b.suspended) || 0) ||
+  //         b.count - a.count,
+  //     )
+  //     .slice(0, topNumber);
+  // }, [filteredGroups, topNumber]);
 
   if (tabs.length === 0) {
     return (
@@ -132,12 +132,12 @@ export function DynamicTabs({ results }: Props) {
         </ScrollArea>
 
         <TabsContent value="top-pairs">
-          <ResultTable data={topPairs} />
+          {/* <ResultTable data={topPairs} /> */}
         </TabsContent>
 
         {tabs.map((t) => (
           <TabsContent key={t} value={t}>
-            <ResultTable data={filteredGroups[t]} />
+            <ResultTable data={groups[t]} />
           </TabsContent>
         ))}
       </Tabs>

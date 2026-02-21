@@ -10,15 +10,27 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ArbitrageResult, Pair } from "@/lib/store/type";
+import { Pair } from "@/lib/store/type";
 import { DetailModal } from "../common/DetailModal";
 import { endpoint } from "@/config/endpoint";
 import { toast } from "sonner";
-import { mutate } from "swr";
+import useSWR, { mutate } from "swr";
+import { ArbitrageTable } from "@/types/common";
 
-export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
-  const [selected, setSelected] = useState<ArbitrageResult | null>(null);
+const fetcher = async (url: string, pair: string | null) => {
+  if (!pair) return [];
+  const res = await fetch(`${url}?pair=${encodeURIComponent(pair)}`);
+  return await res.json();
+};
+
+export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
+  const [selected, setSelected] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const { data: history } = useSWR(
+    [endpoint.fixed.history, selected],
+    ([url, pair]) => fetcher(url, pair),
+  );
   async function remove(p: Pair) {
     const id = `${p.pair}|${p.exchange1}|${p.exchange2}`;
     setRemovingId(id);
@@ -63,13 +75,19 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
               <TableCell>{r.last.ratio.toFixed(4)}</TableCell>
               <TableCell>{r.last.profit.toFixed(2)}</TableCell>
               <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
-              <TableCell>{r.last?.direction === "A_TO_B" ? `${r.exchange1} -> ${r.exchange2}` : `${r.exchange2} -> ${r.exchange1}`}</TableCell>
+              <TableCell>
+                {r.last?.direction === "A_TO_B"
+                  ? `${r.exchange1} -> ${r.exchange2}`
+                  : `${r.exchange2} -> ${r.exchange1}`}
+              </TableCell>
               <TableCell>{new Date(r.last.ts).toLocaleTimeString()}</TableCell>
               <TableCell className="flex gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setSelected(r)}
+                  onClick={() =>
+                    setSelected(`${r.pair}|${r.exchange1}|${r.exchange2}`)
+                  }
                 >
                   Details
                 </Button>
@@ -90,7 +108,7 @@ export function FixedResultTable({ data }: { data: ArbitrageResult[] }) {
       </Table>
 
       {selected && (
-        <DetailModal result={selected} onClose={() => setSelected(null)} />
+        <DetailModal history={history} onClose={() => setSelected(null)} />
       )}
     </>
   );

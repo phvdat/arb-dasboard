@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ArbitrageResult } from "../store/type";
+import { ArbitrageTable } from "@/types/common";
 
 export function groupResultsByExchange(
-  results: Record<string, ArbitrageResult>
+  results: Record<string, ArbitrageTable>
 ) {
-  const map: Record<string, ArbitrageResult[]> = {};
+  const map: Record<string, ArbitrageTable[]> = {};
 
   Object.values(results).forEach((r) => {
     const key = `${r.exchange1} - ${r.exchange2}`;

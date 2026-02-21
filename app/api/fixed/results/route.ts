@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { NextResponse } from 'next/server';
 import { FIXED_DATA_PATH } from '@/lib/constants/paths';
+import { ArbitrageResult } from '@/lib/store/type';
 
 const PATH = FIXED_DATA_PATH;
 
@@ -10,6 +11,11 @@ export async function GET() {
       config: { pairs: [] },
       results: {},
     });
-  }
-  return NextResponse.json(JSON.parse(fs.readFileSync(PATH, 'utf8')));
+  } const data: { results: Record<string, ArbitrageResult> } = JSON.parse(fs.readFileSync(PATH, 'utf8'));
+  const result = Object.fromEntries(
+    Object.entries(data.results).map(([k, v]) => {
+      const { history, ...rest } = v
+      return [k, { ...rest, count: v.history.length }]
+    }));
+  return NextResponse.json(result);
 }

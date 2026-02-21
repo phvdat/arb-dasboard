@@ -12,21 +12,24 @@ import { useDynamicStatusSWR } from "@/swr/useDynamicStatusSWR";
 import { useEffect } from "react";
 import useSWR from "swr";
 
-const fetcher = async (url: string)=> {
+const fetcher = async (url: string) => {
   const res = await fetch(url);
   return await res.json();
-}
+};
 
 export default function DynamicPage() {
   const visible = usePageVisible();
   const { data: dynamicStatus } = useDynamicStatusSWR();
   const isRunning = dynamicStatus?.status === "Running";
-  const {data: fixedData} = useSWR(endpoint.fixed.results, fetcher);
-  const {data: dynamicData, mutate} = useSWR(endpoint.dynamic.results, fetcher);
+  const { data: fixedData } = useSWR(endpoint.fixed.results, fetcher);
+  const { data: dynamicData, mutate } = useSWR(
+    endpoint.dynamic.results,
+    fetcher,
+  );
 
   const dataSerialized = mergeDynamicWithFixed(
-    dynamicData?.results || {},
-    fixedData?.results || {}
+    dynamicData || {},
+    fixedData?.results || {},
   );
 
   useEffect(() => {
@@ -35,7 +38,6 @@ export default function DynamicPage() {
     const i = setInterval(mutate, 3000);
     return () => clearInterval(i);
   }, [isRunning, mutate, visible]);
-
 
   if (!dataSerialized) return <Loading />;
 

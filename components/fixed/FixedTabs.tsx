@@ -2,16 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { groupResultsByExchange } from "@/lib/utils/groupResults";
-import { FixedResultTable } from "./FixedResultTable";
-import { ArbitrageResult } from "@/lib/store/type";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { ArbitrageTable } from "@/types/common";
 import { useState } from "react";
 import { Input } from "../ui/input";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { FixedResultTable } from "./FixedResultTable";
 
 export function FixedTabs({
   results,
 }: {
-  results: Record<string, ArbitrageResult>;
+  results: Record<string, ArbitrageTable>;
 }) {
   const groups = groupResultsByExchange(results);
   const [topNumber, setTopNumber] = useState(100);

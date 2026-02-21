@@ -5,16 +5,17 @@ import { NextResponse } from 'next/server';
 
 const DATA_PATH = DYNAMIC_DATA_PATH
 
-export async function GET() {
+export async function GET(req: Request) {
+  const {searchParams} = new URL(req.url);
+  const pair = searchParams.get('pair');
+  
   if (!fs.existsSync(DATA_PATH)) {
     return NextResponse.json({ results: {} });
   }
 
   const data: { results: Record<string, ArbitrageResult> } = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
-  const result = Object.fromEntries(
-    Object.entries(data.results).map(([k, v]) => {
-      const { history, ...rest } = v
-      return [k, { ...rest, count: v.history.length }]
-    }));
-  return NextResponse.json(result);
+
+  const history = pair ? data.results[pair]?.history : [];
+  
+  return NextResponse.json(history||[]);
 }

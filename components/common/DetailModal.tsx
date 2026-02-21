@@ -7,49 +7,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { ArbitrageResult, ArbitrageTick } from "@/lib/store/type";
+import { ArbitrageTick } from "@/lib/store/type";
 import { List, RowComponentProps } from "react-window";
-
-function Row({
-  index,
-  style,
-  result,
-  history,
-}: RowComponentProps & { result: ArbitrageResult; history: ArbitrageTick[] }) {
-  const h = history[index];
-
-  return (
-    <div style={style} className="grid grid-cols-5 border-b px-4 py-2 text-sm">
-      <div>{new Date(h.ts).toLocaleString("vi-VN")}</div>
-      <div>{h.ratio.toFixed(4)}</div>
-      <div>{h.profit.toFixed(2)}</div>
-      <div>{h?.quantity?.toFixed(2)}</div>
-      <div>
-        {h?.direction === "A_TO_B"
-          ? `${result.exchange1} → ${result.exchange2}`
-          : `${result.exchange2} → ${result.exchange1}`}
-      </div>
-    </div>
-  );
-}
+import Loading from "./Loading";
 
 export function DetailModal({
-  result,
+  history,
   onClose,
 }: {
-  result: ArbitrageResult;
+  history: ArbitrageTick[];
   onClose: () => void;
 }) {
-  const history = result.history?.slice().reverse() ?? [];
-
+  if (!history) return <Loading/>;
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="min-w-fit w-3xl">
         <DialogHeader>
-          <DialogTitle>
-            {result.pair} — {result.exchange1.toUpperCase()} -{" "}
-            {result.exchange2.toUpperCase()}
-          </DialogTitle>
+          <DialogTitle>History</DialogTitle>
         </DialogHeader>
 
         <div className="overflow-x-auto">
@@ -68,7 +42,6 @@ export function DetailModal({
               rowHeight={48}
               rowComponent={Row}
               rowProps={{
-                result,
                 history,
               }}
             />
@@ -78,7 +51,6 @@ export function DetailModal({
               rowHeight={36}
               rowComponent={Row}
               rowProps={{
-                result,
                 history,
               }}
             />
@@ -86,5 +58,23 @@ export function DetailModal({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Row({
+  index,
+  style,
+  history,
+}: RowComponentProps & { history: ArbitrageTick[] }) {
+  const h = history[index];
+
+  return (
+    <div style={style} className="grid grid-cols-5 border-b px-4 py-2 text-sm">
+      <div>{new Date(h.ts).toLocaleString("vi-VN")}</div>
+      <div>{h.ratio.toFixed(4)}</div>
+      <div>{h.profit.toFixed(2)}</div>
+      <div>{h?.quantity?.toFixed(2)}</div>
+      <div>{h?.direction === "A_TO_B" ? "→" : "←"}</div>
+    </div>
   );
 }

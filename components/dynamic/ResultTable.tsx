@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -6,25 +7,36 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { ArbitrageResult, Pair } from "@/lib/store/type";
 import { endpoint } from "@/config/endpoint";
-import { DetailModal } from "../common/DetailModal";
-import { toast } from "sonner";
-import { mutate } from "swr";
+import { Pair } from "@/lib/store/type";
+import { ArbitrageTable } from "@/types/common";
 import { Plus, Trash } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import useSWR, { mutate } from "swr";
+import { DetailModal } from "../common/DetailModal";
 import { Switch } from "../ui/switch";
 
-export function ResultTable({
-  data,
-}: {
-  data: ArbitrageResult[];
-}) {
-  const [selected, setSelected] = useState<ArbitrageResult | null>(null);
+interface ResultTableProps {
+  data: ArbitrageTable[];
+}
+
+const fetcher = async (url: string, pair: string | null) => {
+  if (!pair) return [];
+  const res = await fetch(`${url}?pair=${encodeURIComponent(pair)}`);
+  return await res.json();
+};
+
+export function ResultTable({ data }: ResultTableProps) {
+  const [selected, setSelected] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
-  async function addToFixed(r: ArbitrageResult) {
+  const { data: history } = useSWR(
+    [endpoint.dynamic.history, selected],
+    ([url, pair]) => fetcher(url, pair),
+  );
+
+  async function addToFixed(r: ArbitrageTable) {
     try {
       const res = await fetch(endpoint.fixed.pairs, {
         method: "POST",
@@ -130,7 +142,11 @@ export function ResultTable({
               <TableCell>{r.last ? r.last.profit.toFixed(2) : "-"}</TableCell>
 
               <TableCell>{r.last?.quantity?.toFixed(2)}</TableCell>
-              <TableCell>{r.last?.direction === "A_TO_B" ? `${r.exchange1} -> ${r.exchange2}` : `${r.exchange2} -> ${r.exchange1}`}</TableCell>
+              <TableCell>
+                {r.last?.direction === "A_TO_B"
+                  ? `${r.exchange1} -> ${r.exchange2}`
+                  : `${r.exchange2} -> ${r.exchange1}`}
+              </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {r.last
                   ? new Date(r.last.ts).toLocaleString("vi-VN", {
@@ -148,7 +164,9 @@ export function ResultTable({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setSelected(r)}
+                  onClick={() =>
+                    setSelected(`${r.pair}|${r.exchange1}|${r.exchange2}`)
+                  }
                 >
                   Detail
                 </Button>
@@ -187,7 +205,7 @@ export function ResultTable({
       </Table>
 
       {selected && (
-        <DetailModal result={selected} onClose={() => setSelected(null)} />
+        <DetailModal history={history} onClose={() => setSelected(null)} />
       )}
     </>
   );

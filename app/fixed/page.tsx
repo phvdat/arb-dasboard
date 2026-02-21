@@ -10,20 +10,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { endpoint } from "@/config/endpoint";
 import { usePageVisible } from "@/hooks/usePageVisible";
 import { useFixedStatusSWR } from "@/swr/useFixedStatusSWR";
+import { ArbitrageTable } from "@/types/common";
 import { useEffect } from "react";
 import useSWR from "swr";
 
-
-const fetcher = async (url: string) => {
+const fetcher = async (url: string): Promise<Record<string, ArbitrageTable>> => {
   const res = await fetch(url);
   return await res.json();
-}
+};
 export default function FixedPage() {
   const visible = usePageVisible();
   const { data: fixedStatus } = useFixedStatusSWR();
   const isRunning = fixedStatus?.status === "Running";
 
-  const {data, mutate} = useSWR(endpoint.fixed.results, fetcher);
+  const { data, mutate } = useSWR(endpoint.fixed.results, fetcher);
 
   useEffect(() => {
     if (!visible || !isRunning) return;
@@ -43,7 +43,7 @@ export default function FixedPage() {
           <TabsTrigger value="pairs-list">All Pairs</TabsTrigger>
         </TabsList>
         <TabsContent value="scan-result">
-          <FixedTabs results={data.results || {}} />
+          <FixedTabs results={data || []} />
         </TabsContent>
         <TabsContent value="pairs-list">
           <FixedPairsList />
