@@ -12,9 +12,11 @@ import { List, RowComponentProps } from "react-window";
 import Loading from "./Loading";
 
 export function DetailModal({
+  title,
   history,
   onClose,
 }: {
+  title: string;
   history: ArbitrageTick[];
   onClose: () => void;
 }) {
@@ -23,7 +25,7 @@ export function DetailModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="min-w-fit w-3xl">
         <DialogHeader>
-          <DialogTitle>History</DialogTitle>
+          <DialogTitle className="text-center">{title}</DialogTitle>
         </DialogHeader>
 
         <div className="overflow-x-auto">
@@ -74,7 +76,7 @@ function Row({
       <div>{h.ratio.toFixed(4)}</div>
       <div>{h.profit.toFixed(2)}</div>
       <div>{h?.quantity?.toFixed(2)}</div>
-      <div>{h?.direction === "A_TO_B" ? "→" : "←"}</div>
+      <div>{h?.direction === "A_TO_B" ? <span className="text-green-400">→</span> : <span className="text-red-400">←</span>}</div>
     </div>
   );
 }

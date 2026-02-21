@@ -108,7 +108,7 @@ export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
       </Table>
 
       {selected && (
-        <DetailModal history={history} onClose={() => setSelected(null)} />
+        <DetailModal history={history} title={selected.replaceAll("|", " ")} onClose={() => setSelected(null)} />
       )}
     </>
   );

@@ -16,26 +16,31 @@ import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 import { DetailModal } from "../common/DetailModal";
 import { Switch } from "../ui/switch";
+import { useSearchParams } from "next/navigation";
 
 interface ResultTableProps {
   data: ArbitrageTable[];
 }
 
-const fetcher = async (url: string, pair: string | null) => {
-  if (!pair) return [];
-  const res = await fetch(`${url}?pair=${encodeURIComponent(pair)}`);
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
   return await res.json();
 };
 
 export function ResultTable({ data }: ResultTableProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const range = searchParams.get("range") || "all";
 
   const { data: history } = useSWR(
-    [endpoint.dynamic.history, selected],
-    ([url, pair]) => fetcher(url, pair),
+    selected
+      ? `${endpoint.dynamic.history}?range=${range}&pair=${selected}`
+      : null,
+    fetcher,
   );
-
+  console.log("history", history);
+  
   async function addToFixed(r: ArbitrageTable) {
     try {
       const res = await fetch(endpoint.fixed.pairs, {
@@ -205,7 +210,11 @@ export function ResultTable({ data }: ResultTableProps) {
       </Table>
 
       {selected && (
-        <DetailModal history={history} onClose={() => setSelected(null)} />
+        <DetailModal
+          history={history}
+          title={selected.replaceAll("|", " ")}
+          onClose={() => setSelected(null)}
+        />
       )}
     </>
   );

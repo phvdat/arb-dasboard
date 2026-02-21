@@ -1,13 +1,5 @@
-/* eslint-disable react-hooks/purity */
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { groupResultsByExchange } from "@/lib/utils/groupResults";
 import { ArbitrageTable } from "@/types/common";
@@ -21,65 +13,23 @@ type Props = {
 };
 
 export function DynamicTabs({ results }: Props) {
+  console.log(results);
+  
   const [topNumber, setTopNumber] = useState(100);
-  const [timeFilter, setTimeFilter] = useState("all");
 
   const groups = useMemo(() => groupResultsByExchange(results), [results]);
   const tabs = Object.keys(groups);
 
-  // const filteredGroups = useMemo(() => {
-  //   const now = Date.now();
-
-  //   let filterFrom = 0;
-
-  //   switch (timeFilter) {
-  //     case "5m":
-  //       filterFrom = now - 5 * 60 * 1000;
-  //       break;
-  //     case "15m":
-  //       filterFrom = now - 15 * 60 * 1000;
-  //       break;
-  //     case "1h":
-  //       filterFrom = now - 60 * 60 * 1000;
-  //       break;
-  //     case "24h":
-  //       filterFrom = now - 24 * 60 * 60 * 1000;
-  //       break;
-  //     case "2d":
-  //       filterFrom = now - 2 * 24 * 60 * 60 * 1000;
-  //       break;
-  //     case "3d":
-  //       filterFrom = now - 3 * 24 * 60 * 60 * 1000;
-  //       break;
-  //     case "1w":
-  //       filterFrom = now - 7 * 24 * 60 * 60 * 1000;
-  //       break;
-  //     default:
-  //       filterFrom = 0;
-  //   }
-
-  //   const result: typeof groups = {};
-
-  //   for (const [key, value] of Object.entries(groups)) {
-  //     const filterData = value
-  //       .filter((pair) => pair.last.ts >= filterFrom)
-  //       .map((pair) => ({ ...pair, history: pair.history.filter(his=> his.ts >= filterFrom) }));
-  //     result[key] = filterData;
-  //   }
-
-  //   return result;
-  // }, [groups, timeFilter]);
-
-  // const topPairs = useMemo(() => {
-  //   return Object.values(filteredGroups)
-  //     .flat()
-  //     .sort(
-  //       (a, b) =>
-  //         (Number(a.suspended) || 0) - (Number(b.suspended) || 0) ||
-  //         b.count - a.count,
-  //     )
-  //     .slice(0, topNumber);
-  // }, [filteredGroups, topNumber]);
+  const topPairs = useMemo(() => {
+    return Object.values(groups)
+      .flat()
+      .sort(
+        (a, b) =>
+          (Number(a.suspended) || 0) - (Number(b.suspended) || 0) ||
+          b.count - a.count,
+      )
+      .slice(0, topNumber);
+  }, [groups, topNumber]);
 
   if (tabs.length === 0) {
     return (
@@ -91,24 +41,6 @@ export function DynamicTabs({ results }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-4">
-        <Select value={timeFilter} onValueChange={setTimeFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Filter time" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="5m">Last 5m</SelectItem>
-            <SelectItem value="15m">Last 15m</SelectItem>
-            <SelectItem value="1h">Last 1h</SelectItem>
-            <SelectItem value="24h">Last 24h</SelectItem>
-            <SelectItem value="2d">Last 2 day</SelectItem>
-            <SelectItem value="3d">Last 3 day</SelectItem>
-            <SelectItem value="1w">Last 1 week</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       <Tabs defaultValue="top-pairs">
         <ScrollArea>
           <TabsList className="mb-2">
@@ -132,7 +64,7 @@ export function DynamicTabs({ results }: Props) {
         </ScrollArea>
 
         <TabsContent value="top-pairs">
-          {/* <ResultTable data={topPairs} /> */}
+          <ResultTable data={topPairs} />
         </TabsContent>
 
         {tabs.map((t) => (

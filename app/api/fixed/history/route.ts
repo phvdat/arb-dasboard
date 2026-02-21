@@ -6,16 +6,16 @@ import { NextResponse } from 'next/server';
 const DATA_PATH = FIXED_DATA_PATH
 
 export async function GET(req: Request) {
-  const {searchParams} = new URL(req.url);
+  const { searchParams } = new URL(req.url);
   const pair = searchParams.get('pair');
-  
+
   if (!fs.existsSync(DATA_PATH)) {
-    return NextResponse.json({ results: {} });
+    return NextResponse.json([]);
   }
 
   const data: { results: Record<string, ArbitrageResult> } = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
 
   const history = pair ? data.results[pair]?.history : [];
-  
-  return NextResponse.json(history||[]);
+
+  return NextResponse.json(history.reverse() || []);
 }
