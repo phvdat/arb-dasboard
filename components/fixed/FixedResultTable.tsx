@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,29 +9,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Pair } from "@/lib/store/type";
-import { DetailModal } from "../common/DetailModal";
 import { endpoint } from "@/config/endpoint";
-import { toast } from "sonner";
-import useSWR, { mutate } from "swr";
+import { Pair } from "@/lib/store/type";
 import { ArbitrageTable } from "@/types/common";
-
-const fetcher = async (url: string, pair: string | null) => {
-  if (!pair) return [];
-  const res = await fetch(`${url}?pair=${encodeURIComponent(pair)}`);
-  return await res.json();
-};
+import { useState } from "react";
+import { toast } from "sonner";
+import { mutate } from "swr";
+import { DetailModal } from "../common/DetailModal";
 
 export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
-  const { data: history } = useSWR(
-    [endpoint.fixed.history, selected],
-    ([url, pair]) => fetcher(url, pair),
-  );
   async function remove(p: Pair) {
     const id = `${p.pair}|${p.exchange1}|${p.exchange2}`;
     setRemovingId(id);
@@ -108,7 +98,12 @@ export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
       </Table>
 
       {selected && (
-        <DetailModal history={history} title={selected.replaceAll("|", " ")} onClose={() => setSelected(null)} />
+        <DetailModal
+          pair={selected}
+          endpoint={endpoint.fixed.history}
+          title={selected.replaceAll("|", " ")}
+          onClose={() => setSelected(null)}
+        />
       )}
     </>
   );

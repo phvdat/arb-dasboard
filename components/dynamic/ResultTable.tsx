@@ -30,16 +30,6 @@ const fetcher = async (url: string) => {
 export function ResultTable({ data }: ResultTableProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const range = searchParams.get("range") || "all";
-
-  const { data: history } = useSWR(
-    selected
-      ? `${endpoint.dynamic.history}?range=${range}&pair=${selected}`
-      : null,
-    fetcher,
-  );
-  console.log("history", history);
   
   async function addToFixed(r: ArbitrageTable) {
     try {
@@ -211,7 +201,8 @@ export function ResultTable({ data }: ResultTableProps) {
 
       {selected && (
         <DetailModal
-          history={history}
+          pair={selected}
+          endpoint={endpoint.dynamic.history}
           title={selected.replaceAll("|", " ")}
           onClose={() => setSelected(null)}
         />
