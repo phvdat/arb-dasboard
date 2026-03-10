@@ -16,10 +16,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { DetailModal } from "../common/DetailModal";
+import { LiveModal } from "./LiveModal";
 
 export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [livePair, setLivePair] = useState<string | null>(null);
 
   async function remove(p: Pair) {
     const id = `${p.pair}|${p.exchange1}|${p.exchange2}`;
@@ -74,6 +76,14 @@ export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
               <TableCell className="flex gap-2">
                 <Button
                   size="sm"
+                  onClick={() =>
+                    setLivePair(`${r.pair}|${r.exchange1}|${r.exchange2}`)
+                  }
+                >
+                  Live
+                </Button>
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() =>
                     setSelected(`${r.pair}|${r.exchange1}|${r.exchange2}`)
@@ -104,6 +114,9 @@ export function FixedResultTable({ data }: { data: ArbitrageTable[] }) {
           title={selected.replaceAll("|", " ")}
           onClose={() => setSelected(null)}
         />
+      )}
+      {livePair && (
+        <LiveModal pair={livePair} onClose={() => setLivePair(null)} />
       )}
     </>
   );
