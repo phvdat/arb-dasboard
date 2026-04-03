@@ -127,7 +127,7 @@ export function ResultTable({ data }: ResultTableProps) {
               </TableCell>
 
               <TableCell>
-                {r.exchange1.toUpperCase()} - {r.exchange2.toUpperCase()}
+                {r.exchange1?.toUpperCase()} - {r.exchange2?.toUpperCase()}
               </TableCell>
 
               <TableCell className="font-bold">{r.count}</TableCell>
