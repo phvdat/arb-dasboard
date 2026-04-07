@@ -10,13 +10,12 @@ import { mutate } from "swr";
 import { ClearButton } from "../common/ClearButton";
 import { StatusDot } from "../common/StatusDot";
 import { useDynamicStatusSWR } from "@/swr/useDynamicStatusSWR";
+import { DEFAULT_EXCHANGES } from "@/constants/commons";
 
 export function DynamicSettings() {
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const [exchanges, setExchanges] = useState(
-    "gate,bingx,bitget,bitmart,bitmex,bybit,coinex,cryptocom,htx,hyperliquid,kucoin,mexc,woo",
-  );
+  const [exchanges, setExchanges] = useState(DEFAULT_EXCHANGES.join(","));
   const [minVolume, setMinVolume] = useState(100000);
   const [minPriceRatio, setMinPriceRatio] = useState(1.006);
   const [maxAllowedRatio, setMaxAllowedRatio] = useState(2);

@@ -11,42 +11,69 @@ export async function GET(req: Request) {
 
   const range = searchParams.get("range") || "all";
 
+  const minPriceRatio =
+    Number(searchParams.get("minPriceRatio")) || 1;
+  const exchangesParam = searchParams.get("exchanges") || "";
+  const allowedExchanges = exchangesParam
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
   if (!fs.existsSync(DATA_PATH)) {
-    return NextResponse.json({ history: [] });
+    return NextResponse.json({});
   }
 
-  const data: { results: Record<string, ArbitrageResult> } = JSON.parse(
+  const data: {
+    results: Record<string, ArbitrageResult>;
+  } = JSON.parse(
     fs.readFileSync(DATA_PATH, "utf8")
   );
 
+  const cutoff =
+    range === "all"
+      ? 0
+      : Date.now() - Number(range);
 
-  if (range === "all") {
-    return NextResponse.json(data.results);
-  }
-
-  const ms = Number(range);
-
-  if (isNaN(ms)) {
-    return NextResponse.json({}, { status: 400 });
-  }
-
-  const cutoff = Date.now() - ms;
   const results = Object.entries(data.results).reduce<
     Record<string, ArbitrageTable>
-  >((acc, [k, v]: [string, ArbitrageResult]) => {
-    const { history = [], ...rest } = v
+  >((acc, [key, value]) => {
+    const {
+      history = [],
+      exchange1,
+      exchange2,
+      ...rest
+    } = value;
 
-    const count = history.reduce(
-      (a, h) => (h.ts > cutoff ? a + 1 : a),
-      0
-    )
-
-    if (count > 0) {
-      acc[k] = { ...rest, count }
+    if (
+      allowedExchanges.length &&
+      (
+        !allowedExchanges.includes(exchange1) ||
+        !allowedExchanges.includes(exchange2)
+      )
+    ) {
+      return acc;
     }
 
-    return acc
-  }, {})
-
-  return NextResponse.json(results)
+    const filteredHistory = history.filter(h =>
+      h.ratio >= minPriceRatio &&
+      (
+        range === "all" ||
+        h.ts > cutoff
+      )
+    );
+    const count = filteredHistory.length;
+    if (count > 0) {
+      acc[key] = {
+        ...rest,
+        exchange1,
+        exchange2,
+        count,
+        last:
+          filteredHistory[
+            filteredHistory.length - 1
+          ],
+      };
+    }
+    return acc;
+  }, {});
+  return NextResponse.json(results);
 }

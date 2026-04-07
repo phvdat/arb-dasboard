@@ -1,0 +1,15 @@
+export const DEFAULT_EXCHANGES = [
+  "gate",
+  "bingx",
+  "bitget",
+  "bitmart",
+  "bitmex",
+  "bybit",
+  "coinex",
+  "cryptocom",
+  "htx",
+  "hyperliquid",
+  "kucoin",
+  "mexc",
+  "woo",
+];
