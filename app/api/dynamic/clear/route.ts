@@ -1,13 +1,7 @@
-import { DYNAMIC_DATA_PATH } from "@/lib/constants/paths";
-import fs from "fs";
-import { NextResponse } from "next/server";
-
-const FILE = DYNAMIC_DATA_PATH
+import { clearDynamicResults } from '@/lib/db/dynamicDb';
+import { NextResponse } from 'next/server';
 
 export async function POST() {
-  if (fs.existsSync(FILE)) {
-    fs.unlinkSync(FILE);
-  }
-
+  clearDynamicResults();
   return NextResponse.json({ ok: true });
 }

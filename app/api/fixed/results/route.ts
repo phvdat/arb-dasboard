@@ -1,21 +1,28 @@
-import fs from 'fs';
+import { getFixedResults } from '@/lib/db/fixedDb';
 import { NextResponse } from 'next/server';
-import { FIXED_DATA_PATH } from '@/lib/constants/paths';
-import { ArbitrageResult } from '@/lib/store/type';
-
-const PATH = FIXED_DATA_PATH;
 
 export async function GET() {
-  if (!fs.existsSync(PATH)) {
-    return NextResponse.json({
-      config: { pairs: [] },
-      results: {},
-    });
-  } const data: { results: Record<string, ArbitrageResult> } = JSON.parse(fs.readFileSync(PATH, 'utf8'));
+  const rows = getFixedResults();
+
   const result = Object.fromEntries(
-    Object.entries(data.results).map(([k, v]) => {
-      const { history, ...rest } = v
-      return [k, { ...rest, count: v.history.length }]
-    }));
+    rows.map((row) => [
+      row.id,
+      {
+        pair: row.pair,
+        exchange1: row.exchange1,
+        exchange2: row.exchange2,
+        count: row.count,
+        suspended: row.suspended === 1,
+        last: {
+          ratio: row.ratio,
+          profit: row.profit,
+          ts: row.ts,
+          quantity: row.quantity,
+          direction: row.direction,
+        },
+      },
+    ])
+  );
+
   return NextResponse.json(result);
 }

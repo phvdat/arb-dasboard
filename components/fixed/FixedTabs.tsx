@@ -14,6 +14,7 @@ export function FixedTabs({
   results: Record<string, ArbitrageTable>;
 }) {
   const groups = groupResultsByExchange(results);
+  
   const [topNumber, setTopNumber] = useState(100);
   const tabs = Object.keys(groups);
   const topPairs = Object.values(groups)

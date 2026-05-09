@@ -6,17 +6,15 @@ import {
   stopFixed,
   shouldFixedRun,
 } from './runtimeFixed';
-import { DYNAMIC_DATA_PATH } from '../constants/paths';
-import fs from 'fs';
-const PATH = DYNAMIC_DATA_PATH
+import { getDynamicConfig } from '@/lib/db/dynamicDb';
 
 const LOG_INTERVAL = 3 * 60 * 1000; // 3 phút
 let lastFixedLog = 0;
 
 export async function runFixedLoop() {
-  const json = JSON.parse(fs.readFileSync(PATH, 'utf8'));
-  const minPriceRatio = json.config.minPriceRatio || 1.006;
-  const maxAllowedRatio = json.config.maxAllowedRatio || 2;
+  const config = getDynamicConfig();
+  const minPriceRatio = config?.minPriceRatio ?? 1.006;
+  const maxAllowedRatio = config?.maxAllowedRatio ?? 2;
   if (!startFixed()) {
     console.log('[Fixed] already running');
     return;

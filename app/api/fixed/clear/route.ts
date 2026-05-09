@@ -1,14 +1,8 @@
-import { FIXED_DATA_PATH } from "@/lib/constants/paths";
-import fs from "fs";
-import { NextResponse } from "next/server";
-
-const FILE = FIXED_DATA_PATH
+import { clearFixedResults } from '@/lib/db/fixedDb';
+import { NextResponse } from 'next/server';
 
 export async function POST() {
-  if (fs.existsSync(FILE)) {
-    fs.unlinkSync(FILE);
-    console.log('[Fixed] cleared');
-  }
-
+  clearFixedResults();
+  console.log('[Fixed] cleared');
   return NextResponse.json({ ok: true });
 }

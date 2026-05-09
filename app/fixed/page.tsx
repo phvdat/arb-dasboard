@@ -24,6 +24,8 @@ export default function FixedPage() {
   const isRunning = fixedStatus?.status === "Running";
 
   const { data, mutate } = useSWR(endpoint.fixed.results, fetcher);
+  console.log(data);
+  
 
   useEffect(() => {
     if (!visible || !isRunning) return;

@@ -45,6 +45,11 @@ next-env.d.ts
 /data/dynamic/*
 /data/fixed/*
 
+# sqlite database and WAL/SHM sidecar files
+/data/*.db
+/data/*.db-wal
+/data/*.db-shm
+
 # but keep empty folders
 !/data/.gitkeep
 
