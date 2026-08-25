@@ -38,7 +38,7 @@ export default function DynamicClient() {
 
   const dataSerialized = mergeDynamicWithFixed(
     dynamicData || {},
-    fixedData?.results || {},
+    fixedData || {},
   );
 
   return (

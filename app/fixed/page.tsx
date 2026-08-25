@@ -45,7 +45,7 @@ export default function FixedPage() {
           <TabsTrigger value="pairs-list">All Pairs</TabsTrigger>
         </TabsList>
         <TabsContent value="scan-result">
-          <FixedTabs results={data || []} />
+          <FixedTabs results={data || {}} />
         </TabsContent>
         <TabsContent value="pairs-list">
           <FixedPairsList />
