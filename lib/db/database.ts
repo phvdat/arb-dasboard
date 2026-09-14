@@ -55,10 +55,26 @@ let _db: Db | null = null;
 export async function getDb(): Promise<Db> {
   if (_db) return _db;
 
-  _client = new MongoClient(MONGODB_URI!);
-  await _client.connect();
-  _db = _client.db(DB_NAME);
+  if (!MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined');
+  }
 
+  _client = new MongoClient(MONGODB_URI, {
+    tls: true,
+    retryWrites: true,
+    w: 'majority',
+  });
+
+  try {
+    await _client.connect();
+    // Verify connection
+    await _client.db('admin').command({ ping: 1 });
+  } catch (err) {
+    console.error('[MongoDB] Connection failed:', err);
+    throw err;
+  }
+
+  _db = _client.db(DB_NAME);
   await initCollections(_db);
 
   return _db;
