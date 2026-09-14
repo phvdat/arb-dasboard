@@ -1,68 +1,105 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
+import { MongoClient, type Db, type Collection, type ObjectId } from 'mongodb';
+import type { DynamicConfig } from './dynamicDb';
+import type { FixedConfig } from './fixedDb';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'arb.db');
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  throw new Error('MONGODB_URI is not defined in environment variables');
+}
 
-let _db: Database.Database | null = null;
+const DB_NAME = 'arb-dashboard';
 
-/** Returns the singleton DB connection, initializing it on first call. */
-export function getDb(): Database.Database {
+// ---------------------------------------------------------------------------
+// Document types
+// ---------------------------------------------------------------------------
+
+export type ConfigDoc = {
+  _id: string; // 'dynamic' | 'fixed'
+  data: DynamicConfig | FixedConfig;
+};
+
+export type ResultDoc = {
+  _id: string; // e.g. "BTC/USDT|binance|okx"
+  mode: string;
+  pair: string;
+  exchange1: string;
+  exchange2: string;
+  count: number;
+  ratio: number | null;
+  profit: number | null;
+  ts: number | null;
+  quantity: number | null;
+  direction: string | null;
+  suspended: number;
+};
+
+export type HistoryDoc = {
+  _id?: ObjectId;
+  result_id: string;
+  mode: string;
+  ratio: number;
+  profit: number;
+  ts: number;
+  quantity: number;
+  direction: string;
+};
+
+// ---------------------------------------------------------------------------
+// Singleton connection
+// ---------------------------------------------------------------------------
+
+let _client: MongoClient | null = null;
+let _db: Db | null = null;
+
+/** Returns the singleton MongoDB Db instance, connecting on first call. */
+export async function getDb(): Promise<Db> {
   if (_db) return _db;
 
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+  _client = new MongoClient(MONGODB_URI!);
+  await _client.connect();
+  _db = _client.db(DB_NAME);
 
-  _db = new Database(DB_PATH);
-
-  // WAL mode: concurrent reads don't block writes
-  _db.pragma('journal_mode = WAL');
-  // Enforce foreign key constraints
-  _db.pragma('foreign_keys = ON');
-
-  initDb(_db);
+  await initCollections(_db);
 
   return _db;
 }
 
-/** Creates all tables and indexes. Safe to call multiple times (IF NOT EXISTS). */
-function initDb(db: Database.Database): void {
-  db.exec(`
-    -- Scan config per mode (single row, JSON blob)
-    CREATE TABLE IF NOT EXISTS config (
-      mode  TEXT PRIMARY KEY,
-      data  TEXT NOT NULL
-    );
+/** Typed collection accessors */
+export function configCollection(db: Db): Collection<ConfigDoc> {
+  return db.collection<ConfigDoc>('config');
+}
 
-    -- Latest result per pair (one row per pair+exchange combo)
-    CREATE TABLE IF NOT EXISTS results (
-      id          TEXT PRIMARY KEY,
-      mode        TEXT NOT NULL,
-      pair        TEXT NOT NULL,
-      exchange1   TEXT NOT NULL,
-      exchange2   TEXT NOT NULL,
-      count       INTEGER NOT NULL DEFAULT 0,
-      ratio       REAL,
-      profit      REAL,
-      ts          INTEGER,
-      quantity    REAL,
-      direction   TEXT,
-      suspended   INTEGER NOT NULL DEFAULT 0
-    );
+export function resultsCollection(db: Db): Collection<ResultDoc> {
+  return db.collection<ResultDoc>('results');
+}
 
-    -- Append-only history ticks (high volume)
-    CREATE TABLE IF NOT EXISTS history (
-      id          INTEGER PRIMARY KEY AUTOINCREMENT,
-      result_id   TEXT NOT NULL,
-      mode        TEXT NOT NULL,
-      ratio       REAL NOT NULL,
-      profit      REAL NOT NULL,
-      ts          INTEGER NOT NULL,
-      quantity    REAL NOT NULL,
-      direction   TEXT NOT NULL
-    );
+export function historyCollection(db: Db): Collection<HistoryDoc> {
+  return db.collection<HistoryDoc>('history');
+}
 
-    CREATE INDEX IF NOT EXISTS idx_history_result_id ON history(result_id);
-    CREATE INDEX IF NOT EXISTS idx_history_ts        ON history(ts);
-    CREATE INDEX IF NOT EXISTS idx_results_mode      ON results(mode);
-  `);
+/** Creates collections and indexes. Safe to call multiple times. */
+async function initCollections(db: Db): Promise<void> {
+  const collections = await db.listCollections().toArray();
+  const existing = new Set(collections.map((c) => c.name));
+
+  if (!existing.has('config')) {
+    await db.createCollection('config');
+  }
+  if (!existing.has('results')) {
+    await db.createCollection('results');
+  }
+  if (!existing.has('history')) {
+    await db.createCollection('history');
+  }
+
+  // Indexes for results
+  await db.collection('results').createIndex({ mode: 1 }, { name: 'idx_results_mode' });
+
+  // Indexes for history
+  await db.collection('history').createIndex({ result_id: 1 }, { name: 'idx_history_result_id' });
+  await db.collection('history').createIndex({ ts: 1 }, { name: 'idx_history_ts' });
+  await db.collection('history').createIndex(
+    { result_id: 1, mode: 1, ts: -1 },
+    { name: 'idx_history_result_mode_ts' }
+  );
 }

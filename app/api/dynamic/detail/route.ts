@@ -1,4 +1,4 @@
-import { getDb } from '@/lib/db/database';
+import { getDb, resultsCollection } from '@/lib/db/database';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
@@ -9,7 +9,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Missing key' }, { status: 400 });
   }
 
-  const db = getDb();
-  const row = db.prepare('SELECT * FROM results WHERE id = ?').get(key);
+  const db = await getDb();
+  const col = resultsCollection(db);
+  const row = await col.findOne({ _id: key });
   return NextResponse.json(row ?? null);
 }

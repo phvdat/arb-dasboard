@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     );
   }
 
-  removeFixedPair({ pair, exchange1, exchange2 });
+  await removeFixedPair({ pair, exchange1, exchange2 });
 
   return NextResponse.json({ ok: true });
 }

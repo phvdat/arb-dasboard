@@ -12,7 +12,7 @@ const LOG_INTERVAL = 3 * 60 * 1000; // 3 phút
 let lastFixedLog = 0;
 
 export async function runFixedLoop() {
-  const config = getDynamicConfig();
+  const config = await getDynamicConfig();
   const minPriceRatio = config?.minPriceRatio ?? 1.006;
   const maxAllowedRatio = config?.maxAllowedRatio ?? 2;
   if (!startFixed()) {
@@ -25,7 +25,7 @@ export async function runFixedLoop() {
   try {
     while (shouldFixedRun()) {
       const start = Date.now();
-      const pairs = getFixedPairs();
+      const pairs = await getFixedPairs();
       for (const p of pairs) {
         if (!shouldFixedRun()) break;
 
@@ -42,7 +42,7 @@ export async function runFixedLoop() {
           const r = calcBestTwoWay(ob1, ob2, minPriceRatio, maxAllowedRatio);
 
           if (r && r.qty > 0) {
-            updateFixedResult(
+            await updateFixedResult(
               `${pair}|${exchange1}|${exchange2}`,
               {
                 pair,

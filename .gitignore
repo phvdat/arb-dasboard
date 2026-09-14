@@ -40,17 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# scan data
-/data/*.json
-/data/dynamic/*
-/data/fixed/*
-
-# sqlite database and WAL/SHM sidecar files
-/data/*.db
-/data/*.db-wal
-/data/*.db-shm
-
-# but keep empty folders
-!/data/.gitkeep
-
 /cache

@@ -12,6 +12,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ total: 0, limit, offset, results: [] });
   }
 
-  const page = getFixedHistory(pair, limit, offset);
+  const page = await getFixedHistory(pair, limit, offset);
   return NextResponse.json(page);
 }

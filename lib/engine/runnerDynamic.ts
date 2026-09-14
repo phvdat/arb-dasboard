@@ -18,7 +18,7 @@ export async function scanPair(
   const r = calcBestTwoWay(ob1, ob2, minPriceRatio, maxAllowedRatio)
 
   if (r && r.qty > 0) {
-    updateResult(
+    await updateResult(
       `${pair}|${ex1Id}|${ex2Id}`,
       {
         pair,

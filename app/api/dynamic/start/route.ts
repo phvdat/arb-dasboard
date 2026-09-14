@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       );
     }
     
-    setConfig({
+    await setConfig({
       exchanges,
       minVolume,
       minPriceRatio,

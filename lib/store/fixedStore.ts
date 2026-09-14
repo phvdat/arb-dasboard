@@ -9,15 +9,15 @@ import {
 // Re-export the FixedStore type so existing importers don't break
 export type { FixedConfig as FixedStore } from '@/lib/db/fixedDb';
 
-export function addFixedPair(p: Pair): boolean {
+export async function addFixedPair(p: Pair): Promise<boolean> {
   return dbAddFixedPair(p);
 }
 
-export function getFixedPairs(): Pair[] {
+export async function getFixedPairs(): Promise<Pair[]> {
   return dbGetFixedPairs();
 }
 
-export function updateFixedResult(
+export async function updateFixedResult(
   key: string,
   data: {
     pair: string;
@@ -29,10 +29,10 @@ export function updateFixedResult(
     quantity: number;
     direction: string;
   }
-): void {
-  upsertFixedResult(key, data);
+): Promise<void> {
+  await upsertFixedResult(key, data);
 }
 
-export function removeFixedPair(p: Pair): void {
-  dbRemoveFixedPair(p);
+export async function removeFixedPair(p: Pair): Promise<void> {
+  await dbRemoveFixedPair(p);
 }

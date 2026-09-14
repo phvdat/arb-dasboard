@@ -6,7 +6,7 @@ import {
 } from '@/lib/db/dynamicDb';
 import type { DynamicConfig } from '@/lib/db/dynamicDb';
 
-export function updateResult(
+export async function updateResult(
   key: string,
   data: {
     pair: string;
@@ -18,14 +18,14 @@ export function updateResult(
     quantity: number;
     direction: string;
   }
-): void {
-  upsertDynamicResult(key, data);
+): Promise<void> {
+  await upsertDynamicResult(key, data);
 }
 
-export function setConfig(config: unknown): void {
-  setDynamicConfig(config as DynamicConfig);
+export async function setConfig(config: unknown): Promise<void> {
+  await setDynamicConfig(config as DynamicConfig);
 }
 
-export function updateSuspendedStatus(p: Pair, suspended: boolean): void {
-  setDynamicSuspended(p, suspended);
+export async function updateSuspendedStatus(p: Pair, suspended: boolean): Promise<void> {
+  await setDynamicSuspended(p, suspended);
 }

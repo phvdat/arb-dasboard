@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import { getDb, configCollection, resultsCollection, historyCollection } from './database';
 import type { ArbitrageTick, Pair } from '@/lib/store/type';
 
 const MODE = 'fixed';
@@ -36,53 +36,60 @@ export type HistoryPage = {
 // Config / Pairs
 // ---------------------------------------------------------------------------
 
-export function getFixedConfig(): FixedConfig {
-  const db = getDb();
-  const row = db.prepare('SELECT data FROM config WHERE mode = ?').get(MODE) as
-    | { data: string }
-    | undefined;
-  return row ? (JSON.parse(row.data) as FixedConfig) : { pairs: [] };
+export async function getFixedConfig(): Promise<FixedConfig> {
+  const db = await getDb();
+  const col = configCollection(db);
+  const row = await col.findOne({ _id: MODE });
+  return row ? (row.data as FixedConfig) : { pairs: [] };
 }
 
-function saveFixedConfig(config: FixedConfig): void {
-  const db = getDb();
-  db.prepare(`
-    INSERT INTO config (mode, data) VALUES (?, ?)
-    ON CONFLICT(mode) DO UPDATE SET data = excluded.data
-  `).run(MODE, JSON.stringify(config));
+async function saveFixedConfig(config: FixedConfig): Promise<void> {
+  const db = await getDb();
+  const col = configCollection(db);
+  await col.updateOne(
+    { _id: MODE },
+    { $set: { data: config } },
+    { upsert: true }
+  );
 }
 
-export function getFixedPairs(): Pair[] {
-  return getFixedConfig().pairs;
+export async function getFixedPairs(): Promise<Pair[]> {
+  const config = await getFixedConfig();
+  return config.pairs;
 }
 
 /** Adds a pair. Returns false if it already exists. */
-export function addFixedPair(p: Pair): boolean {
-  const config = getFixedConfig();
+export async function addFixedPair(p: Pair): Promise<boolean> {
+  const config = await getFixedConfig();
   const exists = config.pairs.some(
     (x) => x.pair === p.pair && x.exchange1 === p.exchange1 && x.exchange2 === p.exchange2
   );
   if (exists) return false;
   config.pairs.push(p);
-  saveFixedConfig(config);
+  await saveFixedConfig(config);
   return true;
 }
 
 /** Removes a pair from config and deletes its results + history. */
-export function removeFixedPair(p: Pair): void {
-  const db = getDb();
+export async function removeFixedPair(p: Pair): Promise<void> {
+  const db = await getDb();
   const key = `${p.pair}|${p.exchange1}|${p.exchange2}`;
 
-  const config = getFixedConfig();
+  const config = await getFixedConfig();
   config.pairs = config.pairs.filter(
     (x) => !(x.pair === p.pair && x.exchange1 === p.exchange1 && x.exchange2 === p.exchange2)
   );
 
-  db.transaction(() => {
-    saveFixedConfig(config);
-    db.prepare(`DELETE FROM history WHERE result_id = ? AND mode = ?`).run(key, MODE);
-    db.prepare(`DELETE FROM results WHERE id = ? AND mode = ?`).run(key, MODE);
-  })();
+  const session = db.client.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await saveFixedConfig(config);
+      await historyCollection(db).deleteMany({ result_id: key, mode: MODE }, { session });
+      await resultsCollection(db).deleteOne({ _id: key, mode: MODE }, { session });
+    });
+  } finally {
+    await session.endSession();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -93,7 +100,7 @@ export function removeFixedPair(p: Pair): void {
  * Upsert the latest tick for a fixed pair and append to history.
  * Atomic transaction.
  */
-export function upsertFixedResult(
+export async function upsertFixedResult(
   key: string,
   data: {
     pair: string;
@@ -105,78 +112,101 @@ export function upsertFixedResult(
     quantity: number;
     direction: string;
   }
-): void {
-  const db = getDb();
+): Promise<void> {
+  const db = await getDb();
+  const results = resultsCollection(db);
+  const history = historyCollection(db);
 
-  const upsert = db.prepare(`
-    INSERT INTO results (id, mode, pair, exchange1, exchange2, count, ratio, profit, ts, quantity, direction)
-    VALUES (@id, @mode, @pair, @exchange1, @exchange2, 1, @ratio, @profit, @ts, @quantity, @direction)
-    ON CONFLICT(id) DO UPDATE SET
-      count     = count + 1,
-      ratio     = excluded.ratio,
-      profit    = excluded.profit,
-      ts        = excluded.ts,
-      quantity  = excluded.quantity,
-      direction = excluded.direction
-  `);
+  const session = db.client.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await results.updateOne(
+        { _id: key },
+        {
+          $setOnInsert: {
+            mode: MODE,
+            pair: data.pair,
+            exchange1: data.exchange1,
+            exchange2: data.exchange2,
+          },
+          $inc: { count: 1 },
+          $set: {
+            ratio: data.ratio,
+            profit: data.profit,
+            ts: data.ts,
+            quantity: data.quantity,
+            direction: data.direction,
+          },
+        },
+        { upsert: true, session }
+      );
 
-  const insertHistory = db.prepare(`
-    INSERT INTO history (result_id, mode, ratio, profit, ts, quantity, direction)
-    VALUES (@result_id, @mode, @ratio, @profit, @ts, @quantity, @direction)
-  `);
-
-  db.transaction(() => {
-    upsert.run({ id: key, mode: MODE, ...data });
-    insertHistory.run({
-      result_id: key,
-      mode: MODE,
-      ratio: data.ratio,
-      profit: data.profit,
-      ts: data.ts,
-      quantity: data.quantity,
-      direction: data.direction,
+      await history.insertOne(
+        {
+          result_id: key,
+          mode: MODE,
+          ratio: data.ratio,
+          profit: data.profit,
+          ts: data.ts,
+          quantity: data.quantity,
+          direction: data.direction,
+        },
+        { session }
+      );
     });
-  })();
+  } finally {
+    await session.endSession();
+  }
 }
 
 /** Returns all fixed results (latest tick per pair, no history). */
-export function getFixedResults(): ResultRow[] {
-  const db = getDb();
-  return db.prepare(`SELECT * FROM results WHERE mode = ?`).all(MODE) as ResultRow[];
+export async function getFixedResults(): Promise<ResultRow[]> {
+  const db = await getDb();
+  const col = resultsCollection(db);
+  const rows = await col.find({ mode: MODE }).toArray();
+  return rows.map((r) => ({
+    ...r,
+    id: r._id,
+  }));
 }
 
 /**
  * Returns paginated history ticks for a specific result key.
  * Newest ticks first.
  */
-export function getFixedHistory(
+export async function getFixedHistory(
   resultId: string,
   limit: number = 10000,
   offset: number = 0
-): HistoryPage {
-  const db = getDb();
+): Promise<HistoryPage> {
+  const db = await getDb();
+  const col = historyCollection(db);
 
-  const total = (
-    db.prepare(`
-      SELECT COUNT(*) as cnt FROM history WHERE result_id = @result_id AND mode = @mode
-    `).get({ result_id: resultId, mode: MODE }) as { cnt: number }
-  ).cnt;
+  const filter = { result_id: resultId, mode: MODE };
 
-  const rows = db.prepare(`
-    SELECT ratio, profit, ts, quantity, direction FROM history
-    WHERE result_id = @result_id AND mode = @mode
-    ORDER BY ts DESC
-    LIMIT @limit OFFSET @offset
-  `).all({ result_id: resultId, mode: MODE, limit, offset }) as ArbitrageTick[];
+  const total = await col.countDocuments(filter);
+
+  const rows = await col
+    .find(filter)
+    .project<ArbitrageTick>({ ratio: 1, profit: 1, ts: 1, quantity: 1, direction: 1, _id: 0 })
+    .sort({ ts: -1 })
+    .skip(offset)
+    .limit(limit)
+    .toArray();
 
   return { total, limit, offset, results: rows };
 }
 
 /** Clears all fixed results and history. Leaves config (pairs list) intact. */
-export function clearFixedResults(): void {
-  const db = getDb();
-  db.transaction(() => {
-    db.prepare(`DELETE FROM history WHERE mode = ?`).run(MODE);
-    db.prepare(`DELETE FROM results WHERE mode = ?`).run(MODE);
-  })();
+export async function clearFixedResults(): Promise<void> {
+  const db = await getDb();
+  const session = db.client.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await historyCollection(db).deleteMany({ mode: MODE }, { session });
+      await resultsCollection(db).deleteMany({ mode: MODE }, { session });
+    });
+  } finally {
+    await session.endSession();
+  }
 }

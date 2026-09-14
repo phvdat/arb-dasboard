@@ -2,7 +2,7 @@ import { getFixedResults } from '@/lib/db/fixedDb';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const rows = getFixedResults();
+  const rows = await getFixedResults();
 
   const result = Object.fromEntries(
     rows.map((row) => [

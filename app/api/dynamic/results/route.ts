@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const exchangesParam = searchParams.get('exchanges') || '';
   const exchanges = exchangesParam.split(',').map((s) => s.trim()).filter(Boolean);
 
-  const rows = getDynamicResults({ range, minPriceRatio, exchanges });
+  const rows = await getDynamicResults({ range, minPriceRatio, exchanges });
 
   const results = rows.reduce<Record<string, ArbitrageTable>>((acc, row) => {
     acc[row.id] = {

@@ -10,7 +10,7 @@ export async function PUT(req: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  updateSuspendedStatus({
+  await updateSuspendedStatus({
     pair: id.split('|')[0],
     exchange1: id.split('|')[1],
     exchange2: id.split('|')[2],

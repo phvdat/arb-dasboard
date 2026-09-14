@@ -4,7 +4,7 @@ import { addFixedPair } from '@/lib/store/fixedStore';
 import { getFixedPairs, removeFixedPair } from '@/lib/store/fixedStore';
 
 export async function GET() {
-  return Response.json(getFixedPairs());
+  return Response.json(await getFixedPairs());
 }
 
 export async function POST(req: Request) {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Invalid payload' }, { status: 400 });
   }
 
-  const success = addFixedPair({ pair, exchange1, exchange2 });
+  const success = await addFixedPair({ pair, exchange1, exchange2 });
   if (!success) {
     return NextResponse.json({ message: 'Pair already exists' }, { status: 400 });
   }
@@ -30,7 +30,7 @@ export async function DELETE(req: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  removeFixedPair({
+  await removeFixedPair({
     pair: id.split('|')[0],
     exchange1: id.split('|')[1],
     exchange2: id.split('|')[2],

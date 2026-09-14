@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import { getDb, configCollection, resultsCollection, historyCollection } from './database';
 import type { ArbitrageTick, Pair } from '@/lib/store/type';
 
 const MODE = 'dynamic';
@@ -46,20 +46,21 @@ export type HistoryPage = {
 // Config
 // ---------------------------------------------------------------------------
 
-export function getDynamicConfig(): DynamicConfig | null {
-  const db = getDb();
-  const row = db.prepare('SELECT data FROM config WHERE mode = ?').get(MODE) as
-    | { data: string }
-    | undefined;
-  return row ? (JSON.parse(row.data) as DynamicConfig) : null;
+export async function getDynamicConfig(): Promise<DynamicConfig | null> {
+  const db = await getDb();
+  const col = configCollection(db);
+  const row = await col.findOne({ _id: MODE });
+  return row ? (row.data as DynamicConfig) : null;
 }
 
-export function setDynamicConfig(config: DynamicConfig): void {
-  const db = getDb();
-  db.prepare(`
-    INSERT INTO config (mode, data) VALUES (?, ?)
-    ON CONFLICT(mode) DO UPDATE SET data = excluded.data
-  `).run(MODE, JSON.stringify(config));
+export async function setDynamicConfig(config: DynamicConfig): Promise<void> {
+  const db = await getDb();
+  const col = configCollection(db);
+  await col.updateOne(
+    { _id: MODE },
+    { $set: { data: config } },
+    { upsert: true }
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -70,7 +71,7 @@ export function setDynamicConfig(config: DynamicConfig): void {
  * Upsert the latest tick for a pair and append to history.
  * Uses a transaction so both writes are atomic.
  */
-export function upsertDynamicResult(
+export async function upsertDynamicResult(
   key: string,
   data: {
     pair: string;
@@ -82,116 +83,140 @@ export function upsertDynamicResult(
     quantity: number;
     direction: string;
   }
-): void {
-  const db = getDb();
+): Promise<void> {
+  const db = await getDb();
+  const results = resultsCollection(db);
+  const history = historyCollection(db);
 
-  const upsert = db.prepare(`
-    INSERT INTO results (id, mode, pair, exchange1, exchange2, count, ratio, profit, ts, quantity, direction)
-    VALUES (@id, @mode, @pair, @exchange1, @exchange2, 1, @ratio, @profit, @ts, @quantity, @direction)
-    ON CONFLICT(id) DO UPDATE SET
-      count     = count + 1,
-      ratio     = excluded.ratio,
-      profit    = excluded.profit,
-      ts        = excluded.ts,
-      quantity  = excluded.quantity,
-      direction = excluded.direction
-  `);
+  const session = db.client.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await results.updateOne(
+        { _id: key },
+        {
+          $setOnInsert: {
+            mode: MODE,
+            pair: data.pair,
+            exchange1: data.exchange1,
+            exchange2: data.exchange2,
+          },
+          $inc: { count: 1 },
+          $set: {
+            ratio: data.ratio,
+            profit: data.profit,
+            ts: data.ts,
+            quantity: data.quantity,
+            direction: data.direction,
+          },
+        },
+        { upsert: true, session }
+      );
 
-  const insertHistory = db.prepare(`
-    INSERT INTO history (result_id, mode, ratio, profit, ts, quantity, direction)
-    VALUES (@result_id, @mode, @ratio, @profit, @ts, @quantity, @direction)
-  `);
-
-  db.transaction(() => {
-    upsert.run({ id: key, mode: MODE, ...data });
-    insertHistory.run({
-      result_id: key,
-      mode: MODE,
-      ratio: data.ratio,
-      profit: data.profit,
-      ts: data.ts,
-      quantity: data.quantity,
-      direction: data.direction,
+      await history.insertOne(
+        {
+          result_id: key,
+          mode: MODE,
+          ratio: data.ratio,
+          profit: data.profit,
+          ts: data.ts,
+          quantity: data.quantity,
+          direction: data.direction,
+        },
+        { session }
+      );
     });
-  })();
+  } finally {
+    await session.endSession();
+  }
 }
 
 /**
  * Returns latest results, optionally filtered by range, minPriceRatio, exchanges.
- * count reflects how many history ticks match the filter (not total).
  */
-export function getDynamicResults(filters: ResultFilters = {}): ResultRow[] {
-  const db = getDb();
+export async function getDynamicResults(filters: ResultFilters = {}): Promise<ResultRow[]> {
+  const db = await getDb();
+  const col = resultsCollection(db);
   const { range = 'all', minPriceRatio = 1, exchanges = [] } = filters;
 
   const cutoff = range === 'all' ? 0 : Date.now() - Number(range);
 
-  let query = `SELECT * FROM results WHERE mode = ?`;
-  const params: (string | number)[] = [MODE];
+  const query: Record<string, unknown> = { mode: MODE };
 
   if (exchanges.length) {
-    const placeholders = exchanges.map(() => '?').join(', ');
-    query += ` AND exchange1 IN (${placeholders}) AND exchange2 IN (${placeholders})`;
-    params.push(...exchanges, ...exchanges);
+    query.exchange1 = { $in: exchanges };
+    query.exchange2 = { $in: exchanges };
   }
 
-  const rows = db.prepare(query).all(...params) as ResultRow[];
+  if (range !== 'all') {
+    query.ts = { $gt: cutoff };
+  }
 
-  // Post-filter: ratio and range require checking history counts
-  // For simple last-tick filtering we check the stored ratio/ts directly
-  return rows.filter((r) => {
-    if (r.ratio === null) return false;
-    if (r.ratio < minPriceRatio) return false;
-    if (range !== 'all' && (r.ts === null || r.ts <= cutoff)) return false;
-    return true;
-  });
+  if (minPriceRatio > 1) {
+    query.ratio = { $gte: minPriceRatio };
+  }
+
+  const rows = await col.find(query).toArray();
+
+  return rows.map((r) => ({
+    ...r,
+    id: r._id,
+  }));
 }
 
 /**
  * Returns paginated history ticks for a specific result key.
  * Newest ticks first.
  */
-export function getDynamicHistory(
+export async function getDynamicHistory(
   resultId: string,
   range: string = 'all',
   limit: number = 1000,
   offset: number = 0
-): HistoryPage {
-  const db = getDb();
+): Promise<HistoryPage> {
+  const db = await getDb();
+  const col = historyCollection(db);
 
   const cutoff = range === 'all' ? 0 : Date.now() - Number(range);
-  const whereTs = range === 'all' ? '' : 'AND ts > @cutoff';
 
-  const total = (
-    db.prepare(`
-      SELECT COUNT(*) as cnt FROM history
-      WHERE result_id = @result_id AND mode = @mode ${whereTs}
-    `).get({ result_id: resultId, mode: MODE, cutoff }) as { cnt: number }
-  ).cnt;
+  const filter: Record<string, unknown> = { result_id: resultId, mode: MODE };
+  if (range !== 'all') {
+    filter.ts = { $gt: cutoff };
+  }
 
-  const rows = db.prepare(`
-    SELECT ratio, profit, ts, quantity, direction FROM history
-    WHERE result_id = @result_id AND mode = @mode ${whereTs}
-    ORDER BY ts DESC
-    LIMIT @limit OFFSET @offset
-  `).all({ result_id: resultId, mode: MODE, cutoff, limit, offset }) as ArbitrageTick[];
+  const total = await col.countDocuments(filter);
+
+  const rows = await col
+    .find(filter)
+    .project<ArbitrageTick>({ ratio: 1, profit: 1, ts: 1, quantity: 1, direction: 1, _id: 0 })
+    .sort({ ts: -1 })
+    .skip(offset)
+    .limit(limit)
+    .toArray();
 
   return { total, limit, offset, results: rows };
 }
 
 /** Clears all dynamic results and history. Leaves config intact. */
-export function clearDynamicResults(): void {
-  const db = getDb();
-  db.transaction(() => {
-    db.prepare(`DELETE FROM history WHERE mode = ?`).run(MODE);
-    db.prepare(`DELETE FROM results WHERE mode = ?`).run(MODE);
-  })();
+export async function clearDynamicResults(): Promise<void> {
+  const db = await getDb();
+  const session = db.client.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await historyCollection(db).deleteMany({ mode: MODE }, { session });
+      await resultsCollection(db).deleteMany({ mode: MODE }, { session });
+    });
+  } finally {
+    await session.endSession();
+  }
 }
 
 /** Toggles the suspended flag on a pair. */
-export function setDynamicSuspended(pair: Pair, suspended: boolean): void {
-  const db = getDb();
+export async function setDynamicSuspended(pair: Pair, suspended: boolean): Promise<void> {
+  const db = await getDb();
+  const col = resultsCollection(db);
   const key = `${pair.pair}|${pair.exchange1}|${pair.exchange2}`;
-  db.prepare(`UPDATE results SET suspended = ? WHERE id = ? AND mode = ?`)
-    .run(suspended ? 1 : 0, key, MODE);
+  await col.updateOne(
+    { _id: key, mode: MODE },
+    { $set: { suspended: suspended ? 1 : 0 } }
+  );
 }
