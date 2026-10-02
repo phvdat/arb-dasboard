@@ -11,6 +11,6 @@ export async function GET(req: Request) {
 
   const db = await getDb();
   const col = resultsCollection(db);
-  const row = await col.findOne({ _id: key });
+  const row = await col.findOne({ _id: key.startsWith('dynamic|') ? key : `dynamic|${key}` });
   return NextResponse.json(row ?? null);
 }

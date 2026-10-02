@@ -12,6 +12,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ total: 0, limit, offset, results: [] });
   }
 
-  const page = await getFixedHistory(pair, limit, offset);
+  const resultId = pair.startsWith('fixed|') ? pair : `fixed|${pair}`;
+  const page = await getFixedHistory(resultId, limit, offset);
   return NextResponse.json(page);
 }

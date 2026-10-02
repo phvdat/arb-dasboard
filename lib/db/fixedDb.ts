@@ -73,7 +73,7 @@ export async function addFixedPair(p: Pair): Promise<boolean> {
 /** Removes a pair from config and deletes its results + history. */
 export async function removeFixedPair(p: Pair): Promise<void> {
   const db = await getDb();
-  const key = `${p.pair}|${p.exchange1}|${p.exchange2}`;
+  const key = `${MODE}|${p.pair}|${p.exchange1}|${p.exchange2}`;
 
   const config = await getFixedConfig();
   config.pairs = config.pairs.filter(
@@ -128,6 +128,7 @@ export async function upsertFixedResult(
             pair: data.pair,
             exchange1: data.exchange1,
             exchange2: data.exchange2,
+            suspended: 0,
           },
           $inc: { count: 1 },
           $set: {

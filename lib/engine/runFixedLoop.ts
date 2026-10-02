@@ -43,7 +43,7 @@ export async function runFixedLoop() {
 
           if (r && r.qty > 0) {
             await updateFixedResult(
-              `${pair}|${exchange1}|${exchange2}`,
+              `${"fixed"}|${pair}|${exchange1}|${exchange2}`,
               {
                 pair,
                 exchange1,

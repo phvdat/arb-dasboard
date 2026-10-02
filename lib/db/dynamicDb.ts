@@ -99,6 +99,7 @@ export async function upsertDynamicResult(
             pair: data.pair,
             exchange1: data.exchange1,
             exchange2: data.exchange2,
+            suspended: 0,
           },
           $inc: { count: 1 },
           $set: {
@@ -214,7 +215,7 @@ export async function clearDynamicResults(): Promise<void> {
 export async function setDynamicSuspended(pair: Pair, suspended: boolean): Promise<void> {
   const db = await getDb();
   const col = resultsCollection(db);
-  const key = `${pair.pair}|${pair.exchange1}|${pair.exchange2}`;
+  const key = `${MODE}|${pair.pair}|${pair.exchange1}|${pair.exchange2}`;
   await col.updateOne(
     { _id: key, mode: MODE },
     { $set: { suspended: suspended ? 1 : 0 } }

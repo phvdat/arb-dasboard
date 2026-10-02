@@ -13,6 +13,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ total: 0, limit, offset, results: [] });
   }
 
-  const page = await getDynamicHistory(pair, range, limit, offset);
+  const resultId = pair.startsWith('dynamic|') ? pair : `dynamic|${pair}`;
+  const page = await getDynamicHistory(resultId, range, limit, offset);
   return NextResponse.json(page);
 }

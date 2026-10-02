@@ -19,7 +19,7 @@ export async function scanPair(
 
   if (r && r.qty > 0) {
     await updateResult(
-      `${pair}|${ex1Id}|${ex2Id}`,
+      `${"dynamic"}|${pair}|${ex1Id}|${ex2Id}`,
       {
         pair,
         exchange1: ex1Id,
